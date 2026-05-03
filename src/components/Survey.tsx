@@ -53,8 +53,19 @@ export const Survey = ({ onComplete }: { onComplete: (answers: Record<string, an
         </p>
       </div>
 
-      {/* Question */}
+      {/* Question with Derma */}
       <div className="px-5 pt-6 pb-2 text-center">
+        <div className="flex items-end justify-center gap-3 mb-3">
+          <img
+            src={otter}
+            alt="Derma"
+            className="w-16 h-16 object-contain animate-otter-bob drop-shadow-md"
+          />
+          <div className="relative bg-white border-2 border-baby-blue rounded-2xl px-3 py-2 mb-2 shadow-soft">
+            <div className="absolute left-[-7px] bottom-3 h-3 w-3 bg-white border-l-2 border-b-2 border-baby-blue rotate-45" />
+            <p className="text-[11px] text-navy font-heading">Derma asks</p>
+          </div>
+        </div>
         <h2 key={current.id} className="font-heading text-2xl text-navy animate-fade-in">
           {current.question}
         </h2>
