@@ -13,33 +13,33 @@ export const IntroVideo = ({ onNext }: { onNext: () => void }) => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-white flex flex-col items-center justify-center px-6 py-10">
-      <div className="w-full max-w-2xl rounded-3xl overflow-hidden shadow-soft bg-spa-mist">
-        <video
-          ref={ref}
-          src="/DermaAI_Intro.mp4"
-          autoPlay
-          playsInline
-          controls={false}
-          onEnded={() => setEnded(true)}
-          className="w-full h-auto block bg-white"
-        />
-      </div>
+    <div className="app-frame bg-black">
+      {/* Fullscreen video */}
+      <video
+        ref={ref}
+        src="/DermaAI_Intro.mp4"
+        autoPlay
+        playsInline
+        controls={false}
+        onEnded={() => setEnded(true)}
+        className="absolute inset-0 w-full h-full object-cover"
+      />
 
-      <div className="mt-8 flex flex-wrap gap-4 justify-center">
+      {/* Floating buttons */}
+      <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-3 px-6 z-10">
         <button
           onClick={replay}
-          className="inline-flex items-center gap-2 rounded-full bg-baby-blue text-navy font-bubble text-lg px-6 py-3 shadow-soft hover:scale-105 active:scale-95 transition-transform"
+          className="inline-flex items-center gap-2 rounded-full bg-white/90 backdrop-blur text-navy font-heading text-sm px-5 py-3 shadow-soft active:bg-baby-blue active:scale-95 transition-all"
         >
-          {ended ? <RotateCcw className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+          {ended ? <RotateCcw className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           Replay
         </button>
         <button
           onClick={onNext}
-          className="inline-flex items-center gap-2 rounded-full bg-baby-blue text-navy font-bubble text-lg px-7 py-3 shadow-soft hover:scale-105 active:scale-95 transition-transform"
+          className="inline-flex items-center gap-2 rounded-full bg-white text-navy font-heading text-sm px-6 py-3 shadow-soft border-2 border-baby-blue active:bg-baby-blue active:scale-95 transition-all"
         >
           Next
-          <ArrowRight className="h-5 w-5" />
+          <ArrowRight className="h-4 w-4" />
         </button>
       </div>
     </div>

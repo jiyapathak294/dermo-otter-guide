@@ -24,9 +24,9 @@ const Index = () => {
         />
       )}
       {stage === "done" && (
-        <div className="min-h-screen bg-spa flex flex-col items-center justify-center px-6 text-center">
-          <h1 className="font-bubble text-4xl text-navy">All done, {answers?.firstName || "friend"}! 🦦</h1>
-          <p className="mt-4 text-muted-foreground max-w-md">
+        <div className="app-frame flex flex-col items-center justify-center px-6 text-center">
+          <h1 className="font-heading text-3xl text-navy">All done, {answers?.firstName || "friend"}! 🦦</h1>
+          <p className="mt-4 text-sm text-muted-foreground max-w-xs">
             Dermo is preparing your personalized plan. Your routine, products and learn pages will appear here next.
           </p>
         </div>

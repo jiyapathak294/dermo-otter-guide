@@ -7,7 +7,7 @@ export const LoadingScreen = ({ onDone }: { onDone: () => void }) => {
   }, [onDone]);
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-white">
+    <div className="app-frame flex flex-col items-center justify-center">
       <div className="relative h-20 w-20">
         <div className="absolute inset-0 rounded-full border-4 border-jazz-blue/20" />
         <div
@@ -15,9 +15,8 @@ export const LoadingScreen = ({ onDone }: { onDone: () => void }) => {
           style={{ borderTopColor: "hsl(var(--jazz-blue))" }}
         />
       </div>
-      <p className="mt-6 font-bubble text-2xl tracking-wide" style={{ color: "hsl(var(--jazz-blue))" }}>
-        loading
-        <span className="animate-pulse-soft">…</span>
+      <p className="mt-6 font-heading text-2xl tracking-wide" style={{ color: "hsl(var(--jazz-blue))" }}>
+        loading<span className="animate-pulse-soft">…</span>
       </p>
     </div>
   );
