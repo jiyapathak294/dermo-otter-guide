@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { IntroVideo } from "@/components/IntroVideo";
+import { DermaIntro } from "@/components/DermaIntro";
 import { SurveyIntro } from "@/components/SurveyIntro";
 import { Survey } from "@/components/Survey";
 
-type Stage = "loading" | "intro" | "surveyIntro" | "survey" | "done";
+type Stage = "loading" | "intro" | "derma" | "surveyIntro" | "survey" | "done";
 
 const Index = () => {
   const [stage, setStage] = useState<Stage>("loading");
@@ -13,7 +14,8 @@ const Index = () => {
   return (
     <main>
       {stage === "loading" && <LoadingScreen onDone={() => setStage("intro")} />}
-      {stage === "intro" && <IntroVideo onNext={() => setStage("surveyIntro")} />}
+      {stage === "intro" && <IntroVideo onNext={() => setStage("derma")} />}
+      {stage === "derma" && <DermaIntro onNext={() => setStage("surveyIntro")} />}
       {stage === "surveyIntro" && <SurveyIntro onBegin={() => setStage("survey")} />}
       {stage === "survey" && (
         <Survey
