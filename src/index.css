@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,34 +6,32 @@
 
 @layer base {
   :root {
-    --background: 200 100% 99%;
-    --foreground: 220 60% 18%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 60% 18%;
+    --card-foreground: 0 0% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 60% 18%;
+    --popover-foreground: 0 0% 10%;
 
-    /* Navy text */
     --primary: 222 65% 22%;
-    --primary-foreground: 200 100% 98%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Baby blue */
     --secondary: 205 90% 88%;
     --secondary-foreground: 222 65% 22%;
 
-    --muted: 205 60% 95%;
-    --muted-foreground: 220 25% 45%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 220 10% 40%;
 
-    --accent: 195 85% 80%;
+    --accent: 205 90% 88%;
     --accent-foreground: 222 65% 22%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 205 60% 90%;
-    --input: 205 60% 90%;
+    --border: 210 20% 90%;
+    --input: 210 20% 90%;
     --ring: 210 90% 60%;
 
     --radius: 1.25rem;
@@ -46,26 +44,37 @@
     --spa-mist: 195 60% 96%;
 
     --gradient-progress: linear-gradient(90deg, hsl(205 90% 75%), hsl(215 100% 55%));
-    --gradient-spa: linear-gradient(180deg, hsl(200 100% 99%), hsl(195 80% 95%));
-    --shadow-soft: 0 10px 30px -10px hsl(210 80% 60% / 0.25);
+    --shadow-soft: 0 6px 20px -8px hsl(210 30% 40% / 0.18);
     --shadow-glow: 0 0 40px hsl(215 100% 60% / 0.35);
   }
 }
 
 @layer base {
   * { @apply border-border; }
+  html, body, #root { height: 100%; }
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', system-ui, sans-serif;
   }
-  .font-bubble {
-    font-family: 'Fredoka', system-ui, sans-serif;
-    letter-spacing: -0.01em;
+  .font-heading {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+    font-weight: 700;
   }
+  /* keep alias for any old refs */
+  .font-bubble { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; letter-spacing: -0.02em; font-weight: 700; }
 }
 
 @layer utilities {
-  .bg-spa { background: var(--gradient-spa); }
   .shadow-soft { box-shadow: var(--shadow-soft); }
   .shadow-glow { box-shadow: var(--shadow-glow); }
+
+  /* Mobile app frame: constrains content to a phone-sized canvas */
+  .app-frame {
+    @apply mx-auto bg-white relative overflow-hidden;
+    width: 100%;
+    max-width: 420px;
+    min-height: 100dvh;
+    box-shadow: 0 0 60px -10px hsl(210 30% 40% / 0.15);
+  }
 }
