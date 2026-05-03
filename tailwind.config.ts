@@ -57,6 +57,11 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        "baby-blue": "hsl(var(--baby-blue))",
+        "baby-blue-deep": "hsl(var(--baby-blue-deep))",
+        "jazz-blue": "hsl(var(--jazz-blue))",
+        navy: "hsl(var(--navy))",
+        "spa-mist": "hsl(var(--spa-mist))",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -66,13 +71,6 @@ export default {
       fontFamily: {
         bubble: ["Fredoka", "system-ui", "sans-serif"],
         sans: ["Inter", "system-ui", "sans-serif"],
-      },
-      colors: {
-        "baby-blue": "hsl(var(--baby-blue))",
-        "baby-blue-deep": "hsl(var(--baby-blue-deep))",
-        "jazz-blue": "hsl(var(--jazz-blue))",
-        navy: "hsl(var(--navy))",
-        "spa-mist": "hsl(var(--spa-mist))",
       },
       keyframes: {
         "accordion-down": { from: { height: "0" }, to: { height: "var(--radix-accordion-content-height)" } },
