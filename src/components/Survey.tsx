@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { ArrowRight, ArrowLeft, Check } from "lucide-react";
 import { questions, Question } from "@/data/surveyQuestions";
 import { OptionIcon } from "@/components/OptionIcon";
+import otter from "@/assets/derma-otter.png";
 
 export const Survey = ({ onComplete }: { onComplete: (answers: Record<string, any>) => void }) => {
   const [answers, setAnswers] = useState<Record<string, any>>({});
