@@ -1,22 +1,20 @@
 import { useState } from "react";
-import { LoadingScreen } from "@/components/LoadingScreen";
 import { IntroVideo } from "@/components/IntroVideo";
+import { LoadingVideo } from "@/components/LoadingVideo";
 import { DermaIntro } from "@/components/DermaIntro";
-import { SurveyIntro } from "@/components/SurveyIntro";
 import { Survey } from "@/components/Survey";
 
-type Stage = "loading" | "intro" | "derma" | "surveyIntro" | "survey" | "done";
+type Stage = "intro" | "loading" | "derma" | "survey" | "done";
 
 const Index = () => {
-  const [stage, setStage] = useState<Stage>("loading");
+  const [stage, setStage] = useState<Stage>("intro");
   const [answers, setAnswers] = useState<Record<string, any> | null>(null);
 
   return (
     <main>
-      {stage === "loading" && <LoadingScreen onDone={() => setStage("intro")} />}
-      {stage === "intro" && <IntroVideo onNext={() => setStage("derma")} />}
-      {stage === "derma" && <DermaIntro onNext={() => setStage("surveyIntro")} />}
-      {stage === "surveyIntro" && <SurveyIntro onBegin={() => setStage("survey")} />}
+      {stage === "intro" && <IntroVideo onNext={() => setStage("loading")} />}
+      {stage === "loading" && <LoadingVideo onNext={() => setStage("derma")} />}
+      {stage === "derma" && <DermaIntro onNext={() => setStage("survey")} />}
       {stage === "survey" && (
         <Survey
           onComplete={(a) => {
