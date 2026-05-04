@@ -3,12 +3,13 @@ import { IntroVideo } from "@/components/IntroVideo";
 import { LoadingVideo } from "@/components/LoadingVideo";
 import { DermaIntro } from "@/components/DermaIntro";
 import { Survey } from "@/components/Survey";
+import { Home } from "@/pages/Home";
+import { saveProfile, loadProfile } from "@/lib/profile";
 
-type Stage = "intro" | "loading" | "derma" | "survey" | "loading2" | "done";
+type Stage = "intro" | "loading" | "derma" | "survey" | "loading2" | "home";
 
 const Index = () => {
-  const [stage, setStage] = useState<Stage>("intro");
-  const [answers, setAnswers] = useState<Record<string, any> | null>(null);
+  const [stage, setStage] = useState<Stage>(loadProfile() ? "home" : "intro");
 
   return (
     <main>
@@ -18,20 +19,13 @@ const Index = () => {
       {stage === "survey" && (
         <Survey
           onComplete={(a) => {
-            setAnswers(a);
+            saveProfile(a);
             setStage("loading2");
           }}
         />
       )}
-      {stage === "loading2" && <LoadingVideo onNext={() => setStage("done")} />}
-      {stage === "done" && (
-        <div className="app-frame flex flex-col items-center justify-center px-6 text-center">
-          <h1 className="font-heading text-3xl text-navy">All done, {answers?.firstName || "friend"}! 🦦</h1>
-          <p className="mt-4 text-sm text-muted-foreground max-w-xs">
-            Dermo is preparing your personalized plan. Your routine, products and learn pages will appear here next.
-          </p>
-        </div>
-      )}
+      {stage === "loading2" && <LoadingVideo onNext={() => setStage("home")} />}
+      {stage === "home" && <Home />}
     </main>
   );
 };

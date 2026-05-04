@@ -1,0 +1,13 @@
+project_id = "xjzamsjiikwgucyrkizi"
+
+[functions.routine-generator]
+verify_jwt = false
+
+[functions.ingredient-analyzer]
+verify_jwt = false
+
+[functions.dermo-chat]
+verify_jwt = false
+
+[functions.product-search]
+verify_jwt = false
