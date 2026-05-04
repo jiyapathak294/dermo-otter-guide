@@ -2,100 +2,115 @@ import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import otter from "@/assets/derma-otter.png";
 
-const lines = [
-  "Hi! I'm Derma 🦦",
-  "Your friendly AI sidekick inside Dermo AI.",
-  "My job? To help you help yourself — guiding you through skin, hair & nail care, one step at a time.",
-  "Ready? Let's get to know you.",
+type Step =
+  | { kind: "msg"; text: string }
+  | { kind: "typing" };
+
+const sequence: Step[] = [
+  { kind: "msg", text: "I'm Dermo, the Otter!" },
+  { kind: "typing" },
+  { kind: "msg", text: "I'm here to help you navigate this app and provide the best help possible." },
+  { kind: "typing" },
+  { kind: "msg", text: "Let's start with a quick survey." },
 ];
 
-export const DermaIntro = ({ onNext }: { onNext: () => void }) => {
-  const [step, setStep] = useState(0);
-  const [appeared, setAppeared] = useState(false);
+const TYPING_MS = 1100;
+const READ_MS = 2400;
 
+export const DermaIntro = ({ onNext }: { onNext: () => void }) => {
+  const [appeared, setAppeared] = useState(false);
+  const [whiteFade, setWhiteFade] = useState(true);
+  const [step, setStep] = useState(0);
+  const [leaving, setLeaving] = useState(false);
+
+  // White fade-in
   useEffect(() => {
-    const t = setTimeout(() => setAppeared(true), 100);
-    return () => clearTimeout(t);
+    const t1 = setTimeout(() => setWhiteFade(false), 50);
+    const t2 = setTimeout(() => setAppeared(true), 400);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, []);
 
+  // Auto-advance through sequence (stop at last msg, wait for user)
   useEffect(() => {
     if (!appeared) return;
-    if (step >= lines.length - 1) return;
-    const t = setTimeout(() => setStep((s) => s + 1), 2200);
+    if (step >= sequence.length - 1) return;
+    const cur = sequence[step];
+    const delay = cur.kind === "typing" ? TYPING_MS : READ_MS;
+    const t = setTimeout(() => setStep((s) => s + 1), delay);
     return () => clearTimeout(t);
   }, [appeared, step]);
 
+  const current = sequence[step];
+  const isLast = step === sequence.length - 1;
+
+  const handleNext = () => {
+    setLeaving(true);
+    setTimeout(onNext, 600);
+  };
+
   return (
-    <div className="app-frame flex flex-col items-center justify-between py-10 px-6 overflow-hidden">
-      {/* Glow rings behind otter */}
-      <div className="relative flex-1 w-full flex items-center justify-center">
-        <div
-          className={`absolute h-72 w-72 rounded-full bg-baby-blue/40 blur-2xl transition-all duration-1000 ${
-            appeared ? "scale-100 opacity-100" : "scale-50 opacity-0"
-          }`}
-        />
-        <div
-          className={`absolute h-56 w-56 rounded-full bg-baby-blue-deep/20 transition-all duration-1000 delay-200 ${
-            appeared ? "scale-100 opacity-100 animate-pulse-soft" : "scale-50 opacity-0"
-          }`}
-        />
-        {/* Floating sparkles */}
-        {appeared && (
-          <>
-            <span className="absolute top-6 left-10 text-2xl animate-pulse-soft">✨</span>
-            <span className="absolute top-16 right-8 text-xl animate-pulse-soft" style={{ animationDelay: "0.4s" }}>✨</span>
-            <span className="absolute bottom-10 left-6 text-lg animate-pulse-soft" style={{ animationDelay: "0.8s" }}>💧</span>
-          </>
-        )}
-        <img
-          src={otter}
-          alt="Derma the otter"
-          className={`relative z-10 w-64 h-64 object-contain transition-all duration-700 ${
-            appeared
-              ? "opacity-100 translate-y-0 scale-100 animate-otter-bob"
-              : "opacity-0 translate-y-8 scale-75"
-          }`}
-        />
-      </div>
+    <div className="app-frame bg-white overflow-hidden">
+      {/* Top progress pill (decorative, like UX) */}
+      <div className="absolute top-10 left-6 right-6 h-3 rounded-full bg-baby-blue" />
+
+      {/* Otter bottom-left */}
+      <img
+        src={otter}
+        alt="Dermo the otter"
+        className={[
+          "absolute bottom-0 left-0 w-40 h-40 object-contain object-bottom transition-all duration-500 ease-out",
+          appeared && !leaving ? "translate-x-0 opacity-100" : "",
+          !appeared ? "-translate-x-32 opacity-0" : "",
+          leaving ? "-translate-x-48 opacity-0" : "",
+          appeared && !leaving ? "animate-otter-bob" : "",
+        ].join(" ")}
+      />
 
       {/* Speech bubble */}
-      <div className="w-full">
-        <div
-          key={step}
-          className="relative bg-white border-2 border-baby-blue rounded-3xl px-5 py-5 shadow-soft animate-fade-in"
-        >
-          <div className="absolute -top-2 left-12 h-4 w-4 bg-white border-l-2 border-t-2 border-baby-blue rotate-45" />
-          <p className="text-base text-foreground leading-snug min-h-[72px]">{lines[step]}</p>
-          <div className="mt-3 flex items-center justify-between">
-            <div className="flex gap-1.5">
-              {lines.map((_, i) => (
-                <span
-                  key={i}
-                  className={`h-1.5 rounded-full transition-all ${
-                    i === step ? "w-6 bg-navy" : "w-1.5 bg-border"
-                  }`}
-                />
-              ))}
+      {appeared && !leaving && (
+        <div className="absolute bottom-16 left-36 right-6">
+          {current.kind === "typing" ? (
+            <div
+              key={`t-${step}`}
+              className="inline-flex items-center gap-1.5 bg-muted border border-border rounded-3xl px-5 py-4 animate-fade-in"
+            >
+              <span className="h-2 w-2 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="h-2 w-2 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="h-2 w-2 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "300ms" }} />
             </div>
-            {step < lines.length - 1 ? (
-              <button
-                onClick={() => setStep(step + 1)}
-                className="text-xs font-heading text-navy/60 px-3 py-1 active:scale-95"
-              >
-                Skip ›
-              </button>
-            ) : (
-              <button
-                onClick={onNext}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white border-2 border-baby-blue text-navy font-heading text-sm px-5 py-2 active:bg-baby-blue active:scale-95 transition-all"
-              >
-                Let's go
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            )}
-          </div>
+          ) : (
+            <div
+              key={`m-${step}`}
+              className="relative bg-white border border-foreground/80 rounded-3xl px-5 py-4 animate-fade-in shadow-soft"
+            >
+              <p className="text-base text-foreground text-center leading-snug">
+                {current.text}
+              </p>
+            </div>
+          )}
         </div>
-      </div>
+      )}
+
+      {/* Arrow button (only on last message) */}
+      {isLast && !leaving && (
+        <button
+          onClick={handleNext}
+          aria-label="Start survey"
+          className="absolute bottom-8 right-6 h-14 w-14 rounded-full bg-baby-blue flex items-center justify-center shadow-soft active:scale-95 active:bg-baby-blue-deep transition-all animate-scale-in"
+        >
+          <ArrowRight className="h-6 w-6 text-white" strokeWidth={2.5} />
+        </button>
+      )}
+
+      {/* White fade overlay (entry + exit) */}
+      <div
+        className={`absolute inset-0 bg-white pointer-events-none transition-opacity duration-500 ${
+          whiteFade || leaving ? "opacity-100" : "opacity-0"
+        }`}
+      />
     </div>
   );
 };
