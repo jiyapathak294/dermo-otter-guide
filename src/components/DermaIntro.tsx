@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
-import otter from "@/assets/derma-otter.png";
+import otter from "@/assets/derma-otter.svg";
 
 type Step =
   | { kind: "msg"; text: string }

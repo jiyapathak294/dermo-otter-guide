@@ -4,7 +4,7 @@ import { LoadingVideo } from "@/components/LoadingVideo";
 import { DermaIntro } from "@/components/DermaIntro";
 import { Survey } from "@/components/Survey";
 
-type Stage = "intro" | "loading" | "derma" | "survey" | "done";
+type Stage = "intro" | "loading" | "derma" | "survey" | "loading2" | "done";
 
 const Index = () => {
   const [stage, setStage] = useState<Stage>("intro");
@@ -19,10 +19,11 @@ const Index = () => {
         <Survey
           onComplete={(a) => {
             setAnswers(a);
-            setStage("done");
+            setStage("loading2");
           }}
         />
       )}
+      {stage === "loading2" && <LoadingVideo onNext={() => setStage("done")} />}
       {stage === "done" && (
         <div className="app-frame flex flex-col items-center justify-center px-6 text-center">
           <h1 className="font-heading text-3xl text-navy">All done, {answers?.firstName || "friend"}! 🦦</h1>
