@@ -134,15 +134,15 @@ export const Survey = ({ onComplete }: { onComplete: (answers: Record<string, an
         )}
       </div>
 
-      {/* Sticky Nav (centered baby-blue circle arrow) */}
-      <div className="absolute bottom-0 left-0 right-0 px-6 py-5 bg-white flex items-center justify-between">
+      {/* Sticky Nav: matching circular buttons on both sides */}
+      <div className="absolute bottom-0 left-0 right-0 px-8 py-5 bg-white flex items-center justify-between">
         <button
           onClick={back}
           disabled={idx === 0}
           aria-label="Back"
-          className="h-11 w-11 rounded-full flex items-center justify-center text-navy disabled:opacity-30 active:scale-95 transition-transform"
+          className="h-14 w-14 rounded-full bg-baby-blue flex items-center justify-center disabled:opacity-30 active:scale-95 active:bg-baby-blue-deep transition-all shadow-soft"
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-6 w-6 text-white" strokeWidth={2.5} />
         </button>
         <button
           onClick={next}
@@ -152,7 +152,6 @@ export const Survey = ({ onComplete }: { onComplete: (answers: Record<string, an
         >
           <ArrowRight className="h-6 w-6 text-white" strokeWidth={2.5} />
         </button>
-        <span className="h-11 w-11" aria-hidden />
       </div>
 
       {/* White fade-in overlay */}
