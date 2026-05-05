@@ -1,16 +1,23 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { loadProfile } from "@/lib/profile";
 import { Send, Loader2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import bear from "@/assets/dermo-bear.svg";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
 export const ChatTab = () => {
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "assistant", content: "Hi! I'm Derma 🦦. Tell me how your skin, hair, or nails are doing this week." },
+    { role: "assistant", content: "Hi! I'm **Dermo** 🐻. Tell me how your skin, hair, or nails are doing this week." },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages]);
 
   const send = async () => {
     if (!input.trim() || loading) return;
@@ -57,19 +64,27 @@ export const ChatTab = () => {
       }
     } catch (e: any) {
       setMessages((m) => [...m, { role: "assistant", content: `Sorry — ${e.message}` }]);
-    } finally { setLoading(false); setTimeout(() => scrollRef.current?.scrollTo({ top: 999999 }), 50); }
+    } finally { setLoading(false); }
   };
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-5 pt-6 pb-3 border-b border-border">
-        <h2 className="font-heading text-2xl text-navy">Derma Chat</h2>
+      <div className="px-5 pt-6 pb-3 border-b border-border flex items-center gap-3">
+        <img src={bear} alt="Dermo" className="h-9 w-9 object-contain" />
+        <div>
+          <h2 className="font-heading text-xl text-navy leading-tight">Ask Dermo</h2>
+          <p className="text-[11px] text-muted-foreground">Personal AI dermatology companion</p>
+        </div>
       </div>
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${m.role === "user" ? "bg-navy text-white" : "bg-baby-blue text-foreground"}`}>
-              {m.content || (loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null)}
+          <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"} animate-fade-in`}>
+            <div className={`max-w-[82%] rounded-2xl px-4 py-2.5 text-sm ${m.role === "user" ? "bg-navy text-white" : "bg-baby-blue/40 text-foreground border border-border"}`}>
+              {m.content ? (
+                <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                </div>
+              ) : (loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null)}
             </div>
           </div>
         ))}
@@ -81,7 +96,7 @@ export const ChatTab = () => {
           placeholder="How's your skin today?"
           className="flex-1 rounded-2xl border-2 border-navy px-4 py-3 text-sm outline-none focus:border-jazz-blue"
         />
-        <button onClick={send} disabled={loading} className="h-12 w-12 rounded-2xl bg-baby-blue text-navy flex items-center justify-center"><Send className="h-5 w-5" /></button>
+        <button onClick={send} disabled={loading} className="h-12 w-12 rounded-2xl bg-baby-blue text-white flex items-center justify-center"><Send className="h-5 w-5" /></button>
       </div>
     </div>
   );
