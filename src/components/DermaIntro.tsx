@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
-import otter from "@/assets/derma-otter.svg";
+import bear from "@/assets/dermo-bear.svg";
 
-type Step =
-  | { kind: "msg"; text: string }
-  | { kind: "typing" };
+type Step = { kind: "msg"; text: string } | { kind: "typing" };
 
 const sequence: Step[] = [
-  { kind: "msg", text: "I'm Dermo, the Otter!" },
+  { kind: "msg", text: "Hi, I'm Dermo the Bear!" },
   { kind: "typing" },
-  { kind: "msg", text: "I'm here to help you navigate this app and provide the best help possible." },
+  { kind: "msg", text: "I'm your AI dermatology companion — here to help you build safer routines for skin, hair, and nails." },
   { kind: "typing" },
   { kind: "msg", text: "Let's start with a quick survey." },
 ];
@@ -23,17 +21,12 @@ export const DermaIntro = ({ onNext }: { onNext: () => void }) => {
   const [step, setStep] = useState(0);
   const [leaving, setLeaving] = useState(false);
 
-  // White fade-in
   useEffect(() => {
     const t1 = setTimeout(() => setWhiteFade(false), 50);
     const t2 = setTimeout(() => setAppeared(true), 400);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
-  // Auto-advance through sequence (stop at last msg, wait for user)
   useEffect(() => {
     if (!appeared) return;
     if (step >= sequence.length - 1) return;
@@ -53,48 +46,35 @@ export const DermaIntro = ({ onNext }: { onNext: () => void }) => {
 
   return (
     <div className="app-frame bg-white overflow-hidden">
-      {/* Top progress pill (decorative, like UX) */}
       <div className="absolute top-10 left-6 right-6 h-3 rounded-full bg-baby-blue" />
 
-      {/* Otter bottom-left */}
       <img
-        src={otter}
-        alt="Dermo the otter"
+        src={bear}
+        alt="Dermo the Bear"
         className={[
-          "absolute bottom-0 left-0 w-40 h-40 object-contain object-bottom transition-all duration-500 ease-out",
-          appeared && !leaving ? "translate-x-0 opacity-100" : "",
+          "absolute bottom-0 left-2 w-44 h-44 object-contain object-bottom transition-all duration-500 ease-out",
+          appeared && !leaving ? "translate-x-0 opacity-100 animate-otter-bob" : "",
           !appeared ? "-translate-x-32 opacity-0" : "",
           leaving ? "-translate-x-48 opacity-0" : "",
-          appeared && !leaving ? "animate-otter-bob" : "",
         ].join(" ")}
       />
 
-      {/* Speech bubble */}
       {appeared && !leaving && (
-        <div className="absolute bottom-16 left-36 right-6">
+        <div className="absolute bottom-20 left-40 right-6">
           {current.kind === "typing" ? (
-            <div
-              key={`t-${step}`}
-              className="inline-flex items-center gap-1.5 bg-muted border border-border rounded-3xl px-5 py-4 animate-fade-in"
-            >
-              <span className="h-2 w-2 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "0ms" }} />
+            <div key={`t-${step}`} className="inline-flex items-center gap-1.5 bg-muted border border-border rounded-3xl px-5 py-4 animate-fade-in">
+              <span className="h-2 w-2 rounded-full bg-muted-foreground/60 animate-bounce" />
               <span className="h-2 w-2 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "150ms" }} />
               <span className="h-2 w-2 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: "300ms" }} />
             </div>
           ) : (
-            <div
-              key={`m-${step}`}
-              className="relative bg-white border border-foreground/80 rounded-3xl px-5 py-4 animate-fade-in shadow-soft"
-            >
-              <p className="text-base text-foreground text-center leading-snug">
-                {current.text}
-              </p>
+            <div key={`m-${step}`} className="relative bg-white border border-navy/80 rounded-3xl px-5 py-4 animate-fade-in shadow-soft">
+              <p className="text-base text-foreground text-center leading-snug">{current.text}</p>
             </div>
           )}
         </div>
       )}
 
-      {/* Arrow button (only on last message) */}
       {isLast && !leaving && (
         <button
           onClick={handleNext}
@@ -105,12 +85,7 @@ export const DermaIntro = ({ onNext }: { onNext: () => void }) => {
         </button>
       )}
 
-      {/* White fade overlay (entry + exit) */}
-      <div
-        className={`absolute inset-0 bg-white pointer-events-none transition-opacity duration-500 ${
-          whiteFade || leaving ? "opacity-100" : "opacity-0"
-        }`}
-      />
+      <div className={`absolute inset-0 bg-white pointer-events-none transition-opacity duration-500 ${whiteFade || leaving ? "opacity-100" : "opacity-0"}`} />
     </div>
   );
 };

@@ -1,50 +1,48 @@
 import { useEffect, useState } from "react";
-import { loadProfile, updateGoals } from "@/lib/profile";
-import { Target, Plus, X } from "lucide-react";
+import { loadProfile, updateProfile, UserProfile } from "@/lib/profile";
+import { Target, Plus, X, Sparkles, Wind, Hand } from "lucide-react";
 
-const SUGGESTED = [
-  "Clear acne", "Improve hydration", "Reduce redness", "Strengthen hair",
-  "Improve scalp health", "Reduce hair loss", "Grow healthier nails",
-  "Reduce discoloration", "Build a routine", "Learn about ingredients"
-];
+const SKIN = ["Clear acne", "Brighten skin", "Reduce redness", "Fade dark spots", "Improve hydration", "Smooth texture", "Reduce wrinkles", "Build a routine"];
+const HAIR = ["Reduce hair loss", "Improve scalp health", "Reduce frizz", "Improve hair growth", "Reduce breakage", "Add shine"];
+const NAIL = ["Strengthen nails", "Reduce peeling", "Improve growth", "Reduce discoloration", "Heal cuticles"];
+
+const Group = ({ Icon, title, all, selected, onToggle }: any) => (
+  <div className="space-y-2">
+    <div className="flex items-center gap-2"><Icon className="h-4 w-4 text-navy" /><p className="font-heading text-navy text-sm">{title}</p></div>
+    <div className="flex flex-wrap gap-2">
+      {selected.map((g: string) => (
+        <button key={g} onClick={() => onToggle(g)} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-navy text-white flex items-center gap-1 active:scale-95">
+          {g} <X className="h-3 w-3" />
+        </button>
+      ))}
+      {all.filter((g: string) => !selected.includes(g)).map((g: string) => (
+        <button key={g} onClick={() => onToggle(g)} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-baby-blue text-white flex items-center gap-1 active:scale-95">
+          <Plus className="h-3 w-3" /> {g}
+        </button>
+      ))}
+    </div>
+  </div>
+);
 
 export const GoalsTab = () => {
-  const [goals, setGoals] = useState<string[]>([]);
+  const [p, setP] = useState<UserProfile | null>(null);
+  useEffect(() => { setP(loadProfile()); }, []);
 
-  useEffect(() => { setGoals(loadProfile()?.goals || []); }, []);
-
-  const toggle = (g: string) => {
-    const next = goals.includes(g) ? goals.filter((x) => x !== g) : [...goals, g];
-    setGoals(next); updateGoals(next);
+  const toggle = (key: "skinGoals" | "hairGoals" | "nailGoals", g: string) => {
+    const cur = (p?.[key] as string[]) || [];
+    const next = cur.includes(g) ? cur.filter((x) => x !== g) : [...cur, g];
+    const updated = updateProfile({ [key]: next });
+    setP(updated);
   };
 
   return (
-    <div className="px-5 pt-6 pb-6 space-y-4">
+    <div className="px-5 pt-6 pb-6 space-y-5">
       <div className="flex items-center gap-2"><Target className="h-6 w-6 text-navy" /><h2 className="font-heading text-2xl text-navy">Your Goals</h2></div>
-      <p className="text-sm text-muted-foreground">Goals personalize your routine, products, and chat advice.</p>
+      <p className="text-sm text-muted-foreground">Goals personalize your routine, products, and Dermo's advice.</p>
 
-      <div className="space-y-2">
-        <p className="font-heading text-navy text-sm">Active goals</p>
-        {goals.length === 0 && <p className="text-sm text-muted-foreground">No goals yet. Add some below.</p>}
-        <div className="flex flex-wrap gap-2">
-          {goals.map((g) => (
-            <button key={g} onClick={() => toggle(g)} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-navy text-white flex items-center gap-1">
-              {g} <X className="h-3 w-3" />
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-2 pt-3">
-        <p className="font-heading text-navy text-sm">Suggested</p>
-        <div className="flex flex-wrap gap-2">
-          {SUGGESTED.filter((g) => !goals.includes(g)).map((g) => (
-            <button key={g} onClick={() => toggle(g)} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-baby-blue text-navy flex items-center gap-1">
-              <Plus className="h-3 w-3" /> {g}
-            </button>
-          ))}
-        </div>
-      </div>
+      <Group Icon={Sparkles} title="Skin goals" all={SKIN} selected={p?.skinGoals || []} onToggle={(g: string) => toggle("skinGoals", g)} />
+      <Group Icon={Wind} title="Hair goals" all={HAIR} selected={p?.hairGoals || []} onToggle={(g: string) => toggle("hairGoals", g)} />
+      <Group Icon={Hand} title="Nail goals" all={NAIL} selected={p?.nailGoals || []} onToggle={(g: string) => toggle("nailGoals", g)} />
     </div>
   );
 };
