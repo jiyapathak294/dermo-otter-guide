@@ -35,6 +35,7 @@ export type UserProfile = {
   buyList?: Product[];
   chatHistory?: { role: string; content: string }[];
   progressLogs?: { date: string; note: string }[];
+  goalCheckins?: Record<string, string[]>; // goal name -> ISO date strings (yyyy-mm-dd)
   [k: string]: any;
 };
 
