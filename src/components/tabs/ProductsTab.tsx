@@ -126,6 +126,11 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
           <h3 className="font-heading text-navy text-lg">Buy List</h3>
           {buyList.map((b) => (
             <div key={b.id} className="flex items-center gap-3 bg-white rounded-2xl border border-border p-3">
+              {b.image ? (
+                <img src={b.image} alt={b.name} className="w-12 h-12 rounded-lg object-cover bg-spa-mist flex-none" loading="lazy" />
+              ) : (
+                <div className="w-12 h-12 rounded-lg bg-spa-mist flex-none" />
+              )}
               <div className="flex-1 min-w-0">
                 <p className="font-heading text-navy text-sm truncate">{b.brand}</p>
                 <p className="text-xs text-muted-foreground truncate">{b.name}</p>
