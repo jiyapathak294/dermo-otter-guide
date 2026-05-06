@@ -6,6 +6,7 @@ import { Search, Loader2, ExternalLink, AlertTriangle, Check, Plus, MoreHorizont
 type Product = {
   name: string; brand: string; retailer: string; key_ingredients: string[];
   price_range: string; why_recommended: string; warning: string | null; search_url: string;
+  image?: string; price?: string; product_link?: string; source?: string;
 };
 
 export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
