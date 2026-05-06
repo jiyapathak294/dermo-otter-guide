@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { loadProfile, updateProfile, UserProfile } from "@/lib/profile";
-import { Target, Plus, X, Sparkles, Wind, Hand } from "lucide-react";
+import { loadProfile, updateProfile, UserProfile, checkInGoal, uncheckGoalToday, goalStreak, goalPercent, checkedToday, allGoals } from "@/lib/profile";
+import { Target, Plus, X, Sparkles, Wind, Hand, Flame, Check } from "lucide-react";
 
 const SKIN = ["Clear acne", "Brighten skin", "Reduce redness", "Fade dark spots", "Improve hydration", "Smooth texture", "Reduce wrinkles", "Build a routine"];
 const HAIR = ["Reduce hair loss", "Improve scalp health", "Reduce frizz", "Improve hair growth", "Reduce breakage", "Add shine"];
@@ -35,10 +35,53 @@ export const GoalsTab = () => {
     setP(updated);
   };
 
+  const tracked = allGoals(p);
+
+  const handleCheck = (g: string) => {
+    const updated = checkedToday(g, p) ? uncheckGoalToday(g) : checkInGoal(g);
+    setP(updated);
+  };
+
   return (
     <div className="px-5 pt-6 pb-6 space-y-5">
       <div className="flex items-center gap-2"><Target className="h-6 w-6 text-navy" /><h2 className="font-heading text-2xl text-navy">Your Goals</h2></div>
       <p className="text-sm text-muted-foreground">Goals personalize your routine, products, and Dermo's advice.</p>
+
+      {tracked.length > 0 && (
+        <section className="space-y-2">
+          <div className="flex items-center gap-2"><Flame className="h-4 w-4 text-jazz-blue" /><p className="font-heading text-navy text-sm">Daily progress</p></div>
+          <div className="space-y-2">
+            {tracked.map((g) => {
+              const done = checkedToday(g, p);
+              const streak = goalStreak(g, p);
+              const pct = goalPercent(g, p, 7);
+              return (
+                <div key={g} className="rounded-2xl bg-white border border-border p-3 shadow-soft">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => handleCheck(g)}
+                      aria-label={done ? "Uncheck" : "Check"}
+                      className={`h-8 w-8 rounded-full border-2 flex items-center justify-center flex-none transition-all ${done ? "bg-navy border-navy" : "border-navy bg-white"}`}
+                    >
+                      {done && <Check className="h-4 w-4 text-white" strokeWidth={3} />}
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-navy font-heading truncate">{g}</p>
+                      <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
+                        <span className="flex items-center gap-1"><Flame className="h-3 w-3 text-jazz-blue" /> {streak} day{streak === 1 ? "" : "s"}</span>
+                        <span>· {pct}% this week</span>
+                      </div>
+                      <div className="mt-1 h-1.5 rounded-full bg-spa-mist overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "var(--gradient-progress)" }} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <Group Icon={Sparkles} title="Skin goals" all={SKIN} selected={p?.skinGoals || []} onToggle={(g: string) => toggle("skinGoals", g)} />
       <Group Icon={Wind} title="Hair goals" all={HAIR} selected={p?.hairGoals || []} onToggle={(g: string) => toggle("hairGoals", g)} />
