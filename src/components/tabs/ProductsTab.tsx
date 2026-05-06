@@ -35,7 +35,7 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
   const productKey = (p: Product) => `${p.brand}-${p.name}`.toLowerCase().replace(/\s+/g, "-");
 
   const handleAddBuy = (p: Product) => {
-    const next = addToBuyList({ id: productKey(p), name: p.name, brand: p.brand, retailer: p.retailer, url: p.search_url });
+    const next = addToBuyList({ id: productKey(p), name: p.name, brand: p.brand, retailer: p.source || p.retailer, url: p.product_link || p.search_url, image: p.image, price: p.price || p.price_range });
     setBuyList(next.buyList || []);
     setActionsFor(null);
   };
