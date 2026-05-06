@@ -69,16 +69,25 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
                 {isSel && <Check className="h-4 w-4 text-navy animate-scale-in" strokeWidth={3} />}
               </button>
               <div className="pl-9">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="font-heading text-navy truncate">{p.brand}</p>
-                    <p className="text-sm text-foreground">{p.name}</p>
+                <div className="flex items-start gap-3">
+                  {p.image ? (
+                    <img src={p.image} alt={p.name} className="w-16 h-16 rounded-xl object-cover bg-spa-mist flex-none" loading="lazy" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-xl bg-spa-mist flex-none" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-heading text-navy truncate">{p.brand}</p>
+                        <p className="text-sm text-foreground line-clamp-2">{p.name}</p>
+                      </div>
+                      <a href={p.product_link || p.search_url} target="_blank" rel="noreferrer" aria-label="Open"><ExternalLink className="h-4 w-4 text-muted-foreground" /></a>
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-baby-blue text-white">{p.source || p.retailer}</span>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted text-foreground">{p.price || p.price_range}</span>
+                    </div>
                   </div>
-                  <a href={p.search_url} target="_blank" rel="noreferrer" aria-label="Open"><ExternalLink className="h-4 w-4 text-muted-foreground" /></a>
-                </div>
-                <div className="mt-2 flex flex-wrap gap-1">
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-baby-blue text-white">{p.retailer}</span>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted text-foreground">{p.price_range}</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">Key: {p.key_ingredients.join(", ")}</p>
                 <p className="text-sm mt-2">{p.why_recommended}</p>
