@@ -35,6 +35,7 @@ export type UserProfile = {
   buyList?: Product[];
   chatHistory?: { role: string; content: string }[];
   progressLogs?: { date: string; note: string }[];
+  goalCheckins?: Record<string, string[]>; // goal name -> ISO date strings (yyyy-mm-dd)
   [k: string]: any;
 };
 
@@ -99,3 +100,43 @@ export const setSelectedProduct = (slotKey: string, prod: Product) => {
   sel[slotKey] = prod;
   return updateProfile({ selectedProducts: sel });
 };
+
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
+export const checkInGoal = (goal: string) => {
+  const p = loadProfile() || {};
+  const map = { ...(p.goalCheckins || {}) };
+  const arr = new Set(map[goal] || []);
+  arr.add(todayISO());
+  map[goal] = Array.from(arr).sort();
+  return updateProfile({ goalCheckins: map });
+};
+
+export const uncheckGoalToday = (goal: string) => {
+  const p = loadProfile() || {};
+  const map = { ...(p.goalCheckins || {}) };
+  map[goal] = (map[goal] || []).filter((d) => d !== todayISO());
+  return updateProfile({ goalCheckins: map });
+};
+
+export const goalStreak = (goal: string, p?: UserProfile | null): number => {
+  const dates = new Set((p?.goalCheckins?.[goal]) || []);
+  let streak = 0;
+  const d = new Date();
+  while (dates.has(d.toISOString().slice(0, 10))) { streak++; d.setDate(d.getDate() - 1); }
+  return streak;
+};
+
+export const goalPercent = (goal: string, p?: UserProfile | null, days = 7): number => {
+  const dates = new Set((p?.goalCheckins?.[goal]) || []);
+  let hit = 0;
+  const d = new Date();
+  for (let i = 0; i < days; i++) {
+    if (dates.has(d.toISOString().slice(0, 10))) hit++;
+    d.setDate(d.getDate() - 1);
+  }
+  return Math.round((hit / days) * 100);
+};
+
+export const checkedToday = (goal: string, p?: UserProfile | null): boolean =>
+  ((p?.goalCheckins?.[goal]) || []).includes(todayISO());

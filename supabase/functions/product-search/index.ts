@@ -3,6 +3,36 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+async function enrichWithSerpapi(items: any[]) {
+  const SERPAPI_KEY = Deno.env.get("SERPAPI_KEY");
+  if (!SERPAPI_KEY) return items;
+
+  return await Promise.all(
+    items.map(async (it) => {
+      try {
+        const q = encodeURIComponent(`${it.brand} ${it.name}`);
+        const url = `https://serpapi.com/search.json?engine=google_shopping&q=${q}&num=3&api_key=${SERPAPI_KEY}`;
+        const r = await fetch(url);
+        if (!r.ok) return it;
+        const data = await r.json();
+        const top = data.shopping_results?.[0];
+        if (top) {
+          return {
+            ...it,
+            image: top.thumbnail || it.image,
+            price: top.price || it.price_range,
+            product_link: top.product_link || top.link || it.search_url,
+            source: top.source || it.retailer,
+          };
+        }
+      } catch (e) {
+        console.error("serpapi error", e);
+      }
+      return it;
+    })
+  );
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
@@ -24,7 +54,7 @@ Return STRICT JSON:
       "price_range": string,
       "why_recommended": string,
       "warning": string | null,
-      "search_url": string  // Google search URL: https://www.google.com/search?q=ENCODED+brand+product+retailer
+      "search_url": string
     }
   ]
 }`;
@@ -46,6 +76,7 @@ Return STRICT JSON:
 
     const data = await r.json();
     const out = JSON.parse(data.choices?.[0]?.message?.content || "{}");
+    out.results = await enrichWithSerpapi(out.results || []);
     return new Response(JSON.stringify(out), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     console.error(e);

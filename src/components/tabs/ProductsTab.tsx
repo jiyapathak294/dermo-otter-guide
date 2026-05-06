@@ -6,6 +6,7 @@ import { Search, Loader2, ExternalLink, AlertTriangle, Check, Plus, MoreHorizont
 type Product = {
   name: string; brand: string; retailer: string; key_ingredients: string[];
   price_range: string; why_recommended: string; warning: string | null; search_url: string;
+  image?: string; price?: string; product_link?: string; source?: string;
 };
 
 export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
@@ -34,7 +35,7 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
   const productKey = (p: Product) => `${p.brand}-${p.name}`.toLowerCase().replace(/\s+/g, "-");
 
   const handleAddBuy = (p: Product) => {
-    const next = addToBuyList({ id: productKey(p), name: p.name, brand: p.brand, retailer: p.retailer, url: p.search_url });
+    const next = addToBuyList({ id: productKey(p), name: p.name, brand: p.brand, retailer: p.source || p.retailer, url: p.product_link || p.search_url, image: p.image, price: p.price || p.price_range });
     setBuyList(next.buyList || []);
     setActionsFor(null);
   };
@@ -68,16 +69,25 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
                 {isSel && <Check className="h-4 w-4 text-navy animate-scale-in" strokeWidth={3} />}
               </button>
               <div className="pl-9">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="font-heading text-navy truncate">{p.brand}</p>
-                    <p className="text-sm text-foreground">{p.name}</p>
+                <div className="flex items-start gap-3">
+                  {p.image ? (
+                    <img src={p.image} alt={p.name} className="w-16 h-16 rounded-xl object-cover bg-spa-mist flex-none" loading="lazy" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-xl bg-spa-mist flex-none" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-heading text-navy truncate">{p.brand}</p>
+                        <p className="text-sm text-foreground line-clamp-2">{p.name}</p>
+                      </div>
+                      <a href={p.product_link || p.search_url} target="_blank" rel="noreferrer" aria-label="Open"><ExternalLink className="h-4 w-4 text-muted-foreground" /></a>
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-baby-blue text-white">{p.source || p.retailer}</span>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted text-foreground">{p.price || p.price_range}</span>
+                    </div>
                   </div>
-                  <a href={p.search_url} target="_blank" rel="noreferrer" aria-label="Open"><ExternalLink className="h-4 w-4 text-muted-foreground" /></a>
-                </div>
-                <div className="mt-2 flex flex-wrap gap-1">
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-baby-blue text-white">{p.retailer}</span>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted text-foreground">{p.price_range}</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">Key: {p.key_ingredients.join(", ")}</p>
                 <p className="text-sm mt-2">{p.why_recommended}</p>
@@ -116,6 +126,11 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
           <h3 className="font-heading text-navy text-lg">Buy List</h3>
           {buyList.map((b) => (
             <div key={b.id} className="flex items-center gap-3 bg-white rounded-2xl border border-border p-3">
+              {b.image ? (
+                <img src={b.image} alt={b.name} className="w-12 h-12 rounded-lg object-cover bg-spa-mist flex-none" loading="lazy" />
+              ) : (
+                <div className="w-12 h-12 rounded-lg bg-spa-mist flex-none" />
+              )}
               <div className="flex-1 min-w-0">
                 <p className="font-heading text-navy text-sm truncate">{b.brand}</p>
                 <p className="text-xs text-muted-foreground truncate">{b.name}</p>
