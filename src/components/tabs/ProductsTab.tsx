@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { loadProfile, addToBuyList, removeFromBuyList, Product as ProfileProduct } from "@/lib/profile";
-import { Search, Loader2, ExternalLink, AlertTriangle, Check, Plus, MoreHorizontal, Trash2 } from "lucide-react";
+import { Search, Loader2, ExternalLink, AlertTriangle, Plus, Trash2, SlidersHorizontal, ArrowDownNarrowWide, Star } from "lucide-react";
+import { DermoLogo } from "@/components/DermoLogo";
 
 type Product = {
   name: string; brand: string; retailer: string; key_ingredients: string[];
@@ -9,13 +10,14 @@ type Product = {
   image?: string; price?: string; product_link?: string; source?: string;
 };
 
+const GREEN = "#3a8a5e";
+const GREEN_LIGHT = "#5fa97c";
+
 export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
   const [q, setQ] = useState(initialQuery || "");
   const [results, setResults] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<number | null>(null);
-  const [actionsFor, setActionsFor] = useState<number | null>(null);
   const [buyList, setBuyList] = useState<ProfileProduct[]>(loadProfile()?.buyList || []);
 
   useEffect(() => { if (initialQuery) search(initialQuery); }, [initialQuery]);
@@ -33,114 +35,121 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
   };
 
   const productKey = (p: Product) => `${p.brand}-${p.name}`.toLowerCase().replace(/\s+/g, "-");
-
   const handleAddBuy = (p: Product) => {
     const next = addToBuyList({ id: productKey(p), name: p.name, brand: p.brand, retailer: p.source || p.retailer, url: p.product_link || p.search_url, image: p.image, price: p.price || p.price_range });
-    setBuyList(next.buyList || []);
-    setActionsFor(null);
-  };
-  const handleRemoveBuy = (id: string) => {
-    const next = removeFromBuyList(id);
     setBuyList(next.buyList || []);
   };
 
   return (
-    <div className="px-5 pt-6 pb-6 space-y-4">
-      <h2 className="font-heading text-2xl text-navy">Find Products</h2>
-      <div className="flex gap-2">
-        <input
-          value={q} onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && search()}
-          placeholder="e.g. salicylic acid cleanser for acne"
-          className="flex-1 rounded-2xl border-2 border-navy px-4 py-3 text-sm outline-none focus:border-jazz-blue"
-        />
-        <button onClick={() => search()} className="h-12 w-12 rounded-2xl bg-baby-blue flex items-center justify-center text-white"><Search className="h-5 w-5" /></button>
+    <div className="relative min-h-full bg-white">
+      <div className="px-5 pt-7 pb-5 flex items-center gap-3 bg-white">
+        <DermoLogo color={GREEN} size={42} />
+        <h1 className="font-heading text-[34px] text-foreground">Find Products</h1>
       </div>
 
-      {loading && <div className="flex justify-center py-10"><Loader2 className="h-7 w-7 animate-spin text-navy" /></div>}
-      {error && <div className="rounded-2xl bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
-
-      <div className="space-y-3">
-        {results.map((p, i) => {
-          const isSel = selected === i;
-          return (
-            <div key={i} className={`relative rounded-2xl bg-white border p-4 shadow-soft transition-all ${isSel ? "border-navy ring-2 ring-baby-blue" : "border-border"}`}>
-              <button onClick={() => setSelected(isSel ? null : i)} className="absolute top-3 left-3 h-6 w-6 rounded-full border-2 border-navy bg-white flex items-center justify-center transition-all">
-                {isSel && <Check className="h-4 w-4 text-navy animate-scale-in" strokeWidth={3} />}
-              </button>
-              <div className="pl-9">
-                <div className="flex items-start gap-3">
-                  {p.image ? (
-                    <img src={p.image} alt={p.name} className="w-16 h-16 rounded-xl object-cover bg-spa-mist flex-none" loading="lazy" />
-                  ) : (
-                    <div className="w-16 h-16 rounded-xl bg-spa-mist flex-none" />
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="font-heading text-navy truncate">{p.brand}</p>
-                        <p className="text-sm text-foreground line-clamp-2">{p.name}</p>
-                      </div>
-                      <a href={p.product_link || p.search_url} target="_blank" rel="noreferrer" aria-label="Open"><ExternalLink className="h-4 w-4 text-muted-foreground" /></a>
-                    </div>
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-baby-blue text-white">{p.source || p.retailer}</span>
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted text-foreground">{p.price || p.price_range}</span>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">Key: {p.key_ingredients.join(", ")}</p>
-                <p className="text-sm mt-2">{p.why_recommended}</p>
-                {p.warning && (
-                  <div className="mt-2 flex gap-1 text-xs text-yellow-800 bg-yellow-50 p-2 rounded-lg">
-                    <AlertTriangle className="h-4 w-4 flex-none" /><span>{p.warning}</span>
-                  </div>
-                )}
-                {isSel && (
-                  <div className="mt-3 flex items-center gap-2 animate-fade-in">
-                    <a href={p.search_url} target="_blank" rel="noreferrer" className="flex-1 rounded-full bg-navy text-white text-xs font-semibold py-2 text-center">
-                      Find Online
-                    </a>
-                    <button onClick={() => setActionsFor(actionsFor === i ? null : i)} className="rounded-full bg-baby-blue h-9 w-9 flex items-center justify-center">
-                      <MoreHorizontal className="h-4 w-4 text-white" />
-                    </button>
-                  </div>
-                )}
-                {actionsFor === i && (
-                  <div className="mt-2 rounded-2xl border border-border bg-white p-2 shadow-soft animate-fade-in space-y-1">
-                    <button className="w-full text-left text-sm py-2 px-3 rounded-lg hover:bg-spa-mist">Move/replace routine step</button>
-                    <button className="w-full text-left text-sm py-2 px-3 rounded-lg hover:bg-spa-mist">Analyze ingredients</button>
-                    <button onClick={() => handleAddBuy(p)} className="w-full text-left text-sm py-2 px-3 rounded-lg hover:bg-spa-mist flex items-center gap-2">
-                      <Plus className="h-4 w-4" /> Add to Buy List
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {buyList.length > 0 && (
-        <div className="mt-6 space-y-2">
-          <h3 className="font-heading text-navy text-lg">Buy List</h3>
-          {buyList.map((b) => (
-            <div key={b.id} className="flex items-center gap-3 bg-white rounded-2xl border border-border p-3">
-              {b.image ? (
-                <img src={b.image} alt={b.name} className="w-12 h-12 rounded-lg object-cover bg-spa-mist flex-none" loading="lazy" />
-              ) : (
-                <div className="w-12 h-12 rounded-lg bg-spa-mist flex-none" />
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="font-heading text-navy text-sm truncate">{b.brand}</p>
-                <p className="text-xs text-muted-foreground truncate">{b.name}</p>
-              </div>
-              {b.url && <a href={b.url} target="_blank" rel="noreferrer" className="text-xs text-navy underline">Open</a>}
-              <button onClick={() => handleRemoveBuy(b.id)} aria-label="Remove"><Trash2 className="h-4 w-4 text-muted-foreground" /></button>
-            </div>
-          ))}
+      <div
+        className="px-4 pt-5 pb-10 space-y-4 rounded-t-[28px] min-h-[80vh]"
+        style={{ background: `linear-gradient(180deg, ${GREEN_LIGHT} 0%, ${GREEN} 100%)` }}
+      >
+        {/* Search bar */}
+        <div className="flex items-center gap-2 rounded-full bg-white pl-5 pr-2 py-2 shadow-soft">
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && search()}
+            placeholder="e.g. salicylic acid cleanser for acne"
+            className="flex-1 bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground"
+          />
+          <button onClick={() => search()} className="h-10 w-10 rounded-full flex items-center justify-center text-white" style={{ background: GREEN }}>
+            <Search className="h-5 w-5" />
+          </button>
         </div>
-      )}
+
+        {/* Results card */}
+        <div className="rounded-[26px] bg-white p-5 shadow-soft min-h-[60vh]">
+          <h2 className="font-heading text-2xl text-foreground">Top Results</h2>
+          <div className="flex gap-2 mt-3">
+            <button className="rounded-full border border-foreground/80 px-4 py-1.5 text-xs font-bold inline-flex items-center gap-1.5">
+              FILTER <SlidersHorizontal className="h-3 w-3" />
+            </button>
+            <button className="rounded-full border border-foreground/80 px-4 py-1.5 text-xs font-bold inline-flex items-center gap-1.5">
+              SORT BY <ArrowDownNarrowWide className="h-3 w-3" />
+            </button>
+          </div>
+
+          {loading && <div className="flex justify-center py-10"><Loader2 className="h-7 w-7 animate-spin" stroke={GREEN} /></div>}
+          {error && <div className="mt-3 rounded-2xl bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
+
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            {results.map((p, i) => (
+              <div key={i} className="flex flex-col">
+                <div className="aspect-square rounded-[22px] overflow-hidden bg-spa-mist">
+                  {p.image ? (
+                    <img src={p.image} alt={p.name} loading="lazy" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-b from-baby-blue/40 to-spa-mist" />
+                  )}
+                </div>
+                <p className="mt-2 text-[11px] font-bold tracking-wide text-foreground uppercase">{p.brand}</p>
+                <p className="text-sm text-foreground leading-tight">{p.name}</p>
+                <div className="flex items-center gap-1 mt-1">
+                  {[1,2,3,4,5].map((s) => <Star key={s} className="h-3 w-3" fill="#000" stroke="#000" />)}
+                  <span className="text-[10px] text-muted-foreground ml-1">(rating)</span>
+                </div>
+                <a
+                  href={p.product_link || p.search_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-1 inline-flex items-center gap-1 self-start rounded-full px-3 py-1 text-[11px] font-semibold text-white"
+                  style={{ background: GREEN }}
+                >
+                  {p.source || p.retailer} <ExternalLink className="h-2.5 w-2.5" />
+                </a>
+                <div className="flex gap-2 mt-1.5">
+                  <button onClick={() => handleAddBuy(p)} className="text-[10px] font-semibold text-foreground/80 inline-flex items-center gap-0.5">
+                    <Plus className="h-3 w-3" /> Buy list
+                  </button>
+                </div>
+                {p.warning && (
+                  <div className="mt-1 flex items-start gap-1 text-[10px] text-yellow-800">
+                    <AlertTriangle className="h-3 w-3 flex-none mt-0.5" />
+                    <span>{p.warning}</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {!loading && results.length === 0 && !error && (
+            <div className="text-center text-muted-foreground text-sm py-12">
+              Search for a product or routine ingredient.
+            </div>
+          )}
+
+          {buyList.length > 0 && (
+            <div className="mt-6 space-y-2 border-t border-border pt-4">
+              <h3 className="font-heading text-foreground text-lg">Buy List</h3>
+              {buyList.map((b) => (
+                <div key={b.id} className="flex items-center gap-3 rounded-2xl border border-border p-3">
+                  {b.image ? (
+                    <img src={b.image} alt={b.name} loading="lazy" className="w-12 h-12 rounded-lg object-cover bg-spa-mist flex-none" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-spa-mist flex-none" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-heading text-foreground text-sm truncate">{b.brand}</p>
+                    <p className="text-xs text-muted-foreground truncate">{b.name}</p>
+                  </div>
+                  {b.url && <a href={b.url} target="_blank" rel="noreferrer" className="text-xs text-foreground underline">Open</a>}
+                  <button onClick={() => { const n = removeFromBuyList(b.id); setBuyList(n.buyList || []); }} aria-label="Remove">
+                    <Trash2 className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
