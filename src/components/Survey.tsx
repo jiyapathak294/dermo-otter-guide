@@ -47,36 +47,35 @@ export const Survey = ({ onComplete }: { onComplete: (answers: Record<string, an
 
   const showIcons = !NO_ICON_QUESTIONS.has(current.id);
 
+  const PURPLE = "#8d77ab";
+
   return (
     <div className="app-frame flex flex-col bg-white">
-      {/* Progress (jazz-blue on baby-blue track) */}
-      <div className="px-6 pt-10">
-        <div className="h-3 w-full rounded-full bg-baby-blue overflow-hidden">
+      {/* Progress — baby-blue filled on grey track */}
+      <div className="px-6 pt-12">
+        <div className="h-3 w-full rounded-full bg-muted overflow-hidden">
           <div
-            className="h-full rounded-full transition-all duration-500"
-            style={{
-              width: `${progress}%`,
-              background: "hsl(var(--jazz-blue))",
-            }}
+            className="h-full rounded-full bg-baby-blue transition-all duration-500"
+            style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
       {/* Question */}
-      <div className="px-6 pt-8 text-center">
+      <div className="px-8 pt-10 text-center">
         <h2
           key={current.id}
-          className="font-heading text-[26px] leading-[1.15] text-foreground animate-fade-in"
+          className="font-heading text-[28px] leading-[1.15] text-foreground animate-fade-in"
         >
           {current.question}
         </h2>
         {current.type === "multi" && (
-          <p className="mt-3 text-sm text-muted-foreground">Select all that apply</p>
+          <p className="mt-3 text-base text-muted-foreground">Select all that apply</p>
         )}
       </div>
 
       {/* Options */}
-      <div className="flex-1 px-5 pt-6 pb-28 overflow-y-auto">
+      <div className="flex-1 px-6 pt-8 pb-28 overflow-y-auto">
         {current.type === "text" && (
           <input
             autoFocus
@@ -84,7 +83,8 @@ export const Survey = ({ onComplete }: { onComplete: (answers: Record<string, an
             value={value ?? ""}
             onChange={(e) => setValue(e.target.value)}
             placeholder="Type your answer..."
-            className="w-full rounded-2xl bg-white border-2 border-navy px-5 py-4 text-base text-foreground outline-none focus:border-jazz-blue"
+            className="w-full rounded-2xl bg-white border-2 px-5 py-4 text-base text-foreground outline-none"
+            style={{ borderColor: PURPLE }}
           />
         )}
 
@@ -93,12 +93,13 @@ export const Survey = ({ onComplete }: { onComplete: (answers: Record<string, an
             type="date"
             value={value ?? ""}
             onChange={(e) => setValue(e.target.value)}
-            className="w-full rounded-2xl bg-white border-2 border-navy px-5 py-4 text-base text-foreground outline-none focus:border-jazz-blue"
+            className="w-full rounded-2xl bg-white border-2 px-5 py-4 text-base text-foreground outline-none"
+            style={{ borderColor: PURPLE }}
           />
         )}
 
         {(current.type === "single" || current.type === "multi") && (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-4">
             {current.options!.map((opt) => {
               const selected =
                 current.type === "multi"
@@ -110,20 +111,18 @@ export const Survey = ({ onComplete }: { onComplete: (answers: Record<string, an
                   onClick={() =>
                     current.type === "multi" ? toggleMulti(opt.value) : setValue(opt.value)
                   }
-                  className={[
-                    "relative flex flex-col items-center justify-center text-center gap-2 rounded-2xl px-3 py-5 border-2 transition-all",
-                    showIcons ? "min-h-[110px]" : "min-h-[90px]",
-                    selected
-                      ? "bg-baby-blue border-navy"
-                      : "bg-white border-navy hover:bg-baby-blue/40 active:bg-baby-blue",
-                  ].join(" ")}
+                  className="relative flex flex-col items-center justify-center text-center gap-2 rounded-[22px] px-3 py-4 border-2 transition-all min-h-[78px]"
+                  style={{
+                    borderColor: PURPLE,
+                    backgroundColor: selected ? "#ece6f5" : "white",
+                  }}
                 >
-                  {showIcons && <OptionIcon label={opt.label} className="h-7 w-7" />}
+                  {showIcons && <OptionIcon label={opt.label} className="h-6 w-6" />}
                   <span className="text-sm font-semibold text-foreground leading-tight">
                     {opt.label}
                   </span>
                   {selected && (
-                    <span className="absolute top-1.5 right-1.5 h-5 w-5 rounded-full bg-navy flex items-center justify-center">
+                    <span className="absolute top-1.5 right-1.5 h-5 w-5 rounded-full flex items-center justify-center" style={{ background: PURPLE }}>
                       <Check className="h-3 w-3 text-white" strokeWidth={3} />
                     </span>
                   )}
@@ -134,27 +133,26 @@ export const Survey = ({ onComplete }: { onComplete: (answers: Record<string, an
         )}
       </div>
 
-      {/* Sticky Nav: matching circular buttons on both sides */}
-      <div className="absolute bottom-0 left-0 right-0 px-8 py-5 bg-white flex items-center justify-between">
+      {/* Bottom nav — back & next circles, centered */}
+      <div className="absolute bottom-0 left-0 right-0 px-8 py-6 bg-white flex items-center justify-center gap-6">
         <button
           onClick={back}
           disabled={idx === 0}
           aria-label="Back"
-          className="h-14 w-14 rounded-full bg-baby-blue flex items-center justify-center disabled:opacity-30 active:scale-95 active:bg-baby-blue-deep transition-all shadow-soft"
+          className="h-14 w-14 rounded-full bg-baby-blue flex items-center justify-center disabled:opacity-30 active:scale-95 transition shadow-soft"
         >
-          <ArrowLeft className="h-6 w-6 text-white" strokeWidth={2.5} />
+          <ArrowLeft className="h-6 w-6 text-white" strokeWidth={2.6} />
         </button>
         <button
           onClick={next}
           disabled={!canNext}
           aria-label={idx + 1 >= visible.length ? "Finish" : "Next"}
-          className="h-14 w-14 rounded-full bg-baby-blue flex items-center justify-center disabled:opacity-40 active:scale-95 active:bg-baby-blue-deep transition-all shadow-soft"
+          className="h-14 w-14 rounded-full bg-baby-blue flex items-center justify-center disabled:opacity-40 active:scale-95 transition shadow-soft"
         >
-          <ArrowRight className="h-6 w-6 text-white" strokeWidth={2.5} />
+          <ArrowRight className="h-6 w-6 text-white" strokeWidth={2.6} />
         </button>
       </div>
 
-      {/* White fade-in overlay */}
       <div
         className={`absolute inset-0 bg-white pointer-events-none transition-opacity duration-500 ${
           whiteFade ? "opacity-100" : "opacity-0"

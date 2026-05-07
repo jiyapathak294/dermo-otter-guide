@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { BookOpen, Play, FlaskConical, ChevronDown } from "lucide-react";
+import { Play, FlaskConical, ChevronDown } from "lucide-react";
+import { DermoLogo } from "@/components/DermoLogo";
 
 const VIDEOS = [
   { title: "How to build a skincare routine", id: "r0wIWBSfgXM", source: "Dr Dray (board-certified dermatologist)" },
@@ -26,8 +27,12 @@ export const LearnTab = () => {
   const [openIng, setOpenIng] = useState<string | null>(null);
 
   return (
-    <div className="px-5 pt-6 pb-6 space-y-5">
-      <div className="flex items-center gap-2"><BookOpen className="h-6 w-6 text-navy" /><h2 className="font-heading text-2xl text-navy">Learn</h2></div>
+    <div className="pb-6">
+      <div className="px-5 pt-7 pb-4 flex items-center gap-3 bg-white">
+        <DermoLogo color="hsl(var(--jazz-blue))" size={42} />
+        <h1 className="font-heading text-[34px] text-foreground">Learn</h1>
+      </div>
+      <div className="px-5 space-y-5">
       <p className="text-sm text-muted-foreground">Curated dermatology education from board-certified experts.</p>
 
       <section className="space-y-3">
@@ -88,6 +93,7 @@ export const LearnTab = () => {
           ))}
         </div>
       </section>
+      </div>
     </div>
   );
 };
