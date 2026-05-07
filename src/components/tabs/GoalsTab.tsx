@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { loadProfile, updateProfile, UserProfile, checkInGoal, uncheckGoalToday, goalStreak, goalPercent, checkedToday, allGoals } from "@/lib/profile";
-import { Target, Plus, X, Sparkles, Wind, Hand, Flame, Check } from "lucide-react";
+import { Plus, X, Sparkles, Wind, Hand, Flame, Check } from "lucide-react";
+import { DermoLogo } from "@/components/DermoLogo";
 
 const SKIN = ["Clear acne", "Brighten skin", "Reduce redness", "Fade dark spots", "Improve hydration", "Smooth texture", "Reduce wrinkles", "Build a routine"];
 const HAIR = ["Reduce hair loss", "Improve scalp health", "Reduce frizz", "Improve hair growth", "Reduce breakage", "Add shine"];
@@ -43,8 +44,12 @@ export const GoalsTab = () => {
   };
 
   return (
-    <div className="px-5 pt-6 pb-6 space-y-5">
-      <div className="flex items-center gap-2"><Target className="h-6 w-6 text-navy" /><h2 className="font-heading text-2xl text-navy">Your Goals</h2></div>
+    <div className="pb-6">
+      <div className="px-5 pt-7 pb-4 flex items-center gap-3 bg-white">
+        <DermoLogo color="hsl(var(--jazz-blue))" size={42} />
+        <h1 className="font-heading text-[34px] text-foreground">Goals</h1>
+      </div>
+      <div className="px-5 space-y-5">
       <p className="text-sm text-muted-foreground">Goals personalize your routine, products, and Dermo's advice.</p>
 
       {tracked.length > 0 && (
@@ -86,6 +91,7 @@ export const GoalsTab = () => {
       <Group Icon={Sparkles} title="Skin goals" all={SKIN} selected={p?.skinGoals || []} onToggle={(g: string) => toggle("skinGoals", g)} />
       <Group Icon={Wind} title="Hair goals" all={HAIR} selected={p?.hairGoals || []} onToggle={(g: string) => toggle("hairGoals", g)} />
       <Group Icon={Hand} title="Nail goals" all={NAIL} selected={p?.nailGoals || []} onToggle={(g: string) => toggle("nailGoals", g)} />
+      </div>
     </div>
   );
 };

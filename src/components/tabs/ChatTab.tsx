@@ -3,7 +3,8 @@ import { loadProfile } from "@/lib/profile";
 import { Send, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import bear from "@/assets/dermo-bear.svg";
+import { DermoLogo } from "@/components/DermoLogo";
+import otter from "@/assets/dermo-otter.png";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -69,12 +70,9 @@ export const ChatTab = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-5 pt-6 pb-3 border-b border-border flex items-center gap-3">
-        <img src={bear} alt="Dermo" className="h-9 w-9 object-contain" />
-        <div>
-          <h2 className="font-heading text-xl text-navy leading-tight">Ask Dermo</h2>
-          <p className="text-[11px] text-muted-foreground">Personal AI dermatology companion</p>
-        </div>
+      <div className="px-5 pt-7 pb-4 flex items-center gap-3 bg-white">
+        <DermoLogo color="hsl(var(--jazz-blue))" size={42} />
+        <h1 className="font-heading text-[34px] text-foreground">Derma</h1>
       </div>
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {messages.map((m, i) => (
