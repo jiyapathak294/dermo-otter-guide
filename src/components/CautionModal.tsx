@@ -7,7 +7,7 @@ export const CautionModal = ({ profile, onClose }: { profile: UserProfile | null
   const pregnant = profile?.lifeStage === "Pregnant" || profile?.lifeStage === "Breastfeeding";
 
   return (
-    <div className="absolute inset-0 z-50 flex items-end animate-fade-in">
+    <div className="fixed inset-0 z-[100] flex items-end animate-fade-in">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative w-full bg-white rounded-t-3xl p-5 max-h-[80%] overflow-y-auto animate-scale-in">
         <div className="flex items-center justify-between mb-3">
