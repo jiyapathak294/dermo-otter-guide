@@ -25,9 +25,19 @@ export const Survey = ({ onComplete }: { onComplete: (answers: Record<string, an
   if (!current) return null;
 
   const value = answers[current.id];
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const isValidDob = (v: any) => {
+    if (typeof v !== "string" || !v) return false;
+    const d = new Date(v);
+    if (isNaN(d.getTime())) return false;
+    const now = new Date();
+    const min = new Date("1900-01-01");
+    return d <= now && d >= min;
+  };
   const canNext = (() => {
     if (current.type === "multi") return Array.isArray(value) && value.length > 0;
     if (current.type === "text") return typeof value === "string" && value.trim().length > 0;
+    if (current.type === "date") return isValidDob(value);
     return value !== undefined && value !== "";
   })();
 
@@ -89,13 +99,20 @@ export const Survey = ({ onComplete }: { onComplete: (answers: Record<string, an
         )}
 
         {current.type === "date" && (
-          <input
-            type="date"
-            value={value ?? ""}
-            onChange={(e) => setValue(e.target.value)}
-            className="w-full rounded-2xl bg-white border-2 px-5 py-4 text-base text-foreground outline-none"
-            style={{ borderColor: PURPLE }}
-          />
+          <>
+            <input
+              type="date"
+              value={value ?? ""}
+              max={todayStr}
+              min="1900-01-01"
+              onChange={(e) => setValue(e.target.value)}
+              className="w-full rounded-2xl bg-white border-2 px-5 py-4 text-base text-foreground outline-none"
+              style={{ borderColor: PURPLE }}
+            />
+            {value && !isValidDob(value) && (
+              <p className="mt-2 text-sm text-destructive">Please enter a valid past date.</p>
+            )}
+          </>
         )}
 
         {(current.type === "single" || current.type === "multi") && (
