@@ -1,7 +1,7 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { loadProfile } from "@/lib/profile";
-import { Loader2, ShieldCheck, ShieldAlert, ShieldX, ArrowLeft, Image as ImageIcon } from "lucide-react";
+import { Loader2, ShieldCheck, ShieldAlert, ShieldX, ArrowLeft, Image as ImageIcon, Camera } from "lucide-react";
 import { DermoLogo } from "@/components/DermoLogo";
 
 type Ingredient = { name: string; purpose: string; flag: "green" | "yellow" | "red"; note: string };
@@ -32,8 +32,48 @@ export const ScanTab = () => {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const camRef = useRef<HTMLInputElement>(null);
+  const [camState, setCamState] = useState<"idle" | "requesting" | "live" | "denied" | "unavailable">("idle");
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const stopCam = () => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+  };
+
+  const startCam = async () => {
+    setError(null);
+    if (!navigator.mediaDevices?.getUserMedia) { setCamState("unavailable"); return; }
+    setCamState("requesting");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "environment" } }, audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play().catch(() => {});
+      }
+      setCamState("live");
+    } catch (e: any) {
+      setCamState(e?.name === "NotAllowedError" ? "denied" : "unavailable");
+    }
+  };
+
+  useEffect(() => () => stopCam(), []);
+
+  const capture = () => {
+    const v = videoRef.current; if (!v) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = v.videoWidth; canvas.height = v.videoHeight;
+    const ctx = canvas.getContext("2d"); if (!ctx) return;
+    ctx.drawImage(v, 0, 0);
+    setImageData(canvas.toDataURL("image/jpeg", 0.9));
+    setAnalysis(null);
+    stopCam();
+    setCamState("idle");
+  };
 
   const onFile = (f: File | null) => {
     if (!f) return;
@@ -53,6 +93,8 @@ export const ScanTab = () => {
     } catch (e: any) { setError(e.message); } finally { setLoading(false); }
   };
 
+  const reset = () => { setImageData(null); setAnalysis(null); stopCam(); setCamState("idle"); };
+
   const V = analysis ? verdictMap[analysis.verdict] : null;
 
   return (
@@ -62,43 +104,51 @@ export const ScanTab = () => {
         <h1 className="font-heading text-[34px] text-foreground">Scan</h1>
       </div>
 
-      {/* Camera viewport */}
+      {/* Viewport */}
       <div className="relative aspect-[3/4.2] bg-spa-mist overflow-hidden">
         {imageData ? (
           <img src={imageData} alt="Scanned product" className="w-full h-full object-cover" />
+        ) : camState === "live" ? (
+          <video ref={videoRef} playsInline muted className="w-full h-full object-cover" />
         ) : (
-          <div
-            className="w-full h-full bg-gradient-to-br from-spa-mist to-baby-blue/40 flex items-center justify-center"
-          >
-            <p className="text-muted-foreground text-sm">Tap a button below to capture</p>
+          <div className="w-full h-full bg-gradient-to-br from-spa-mist to-baby-blue/40 flex flex-col items-center justify-center gap-3 px-6 text-center">
+            {camState === "denied" && <p className="text-sm text-destructive">Camera permission denied. Enable it in your browser settings.</p>}
+            {camState === "unavailable" && <p className="text-sm text-muted-foreground">Camera unavailable on this device. Use the library instead.</p>}
+            {camState === "requesting" && <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />}
+            {camState === "idle" && (
+              <button
+                onClick={startCam}
+                className="rounded-full bg-foreground text-white px-5 py-3 text-sm font-bold inline-flex items-center gap-2 active:scale-95"
+              >
+                <Camera className="h-4 w-4" /> Enable camera
+              </button>
+            )}
           </div>
         )}
 
-        {/* Bracket overlay */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative w-[78%] aspect-square">
-            <Brackets />
-          </div>
+          <div className="relative w-[78%] aspect-square"><Brackets /></div>
         </div>
 
-        {/* Top-left back arrow */}
-        <button
-          onClick={() => { setImageData(null); setAnalysis(null); }}
-          className="absolute top-4 left-4 h-11 w-11 rounded-full bg-foreground/40 backdrop-blur flex items-center justify-center"
-          aria-label="Back"
-        >
-          <ArrowLeft className="h-5 w-5 text-white" strokeWidth={2.6} />
-        </button>
+        {(imageData || camState === "live") && (
+          <button
+            onClick={reset}
+            className="absolute top-4 left-4 h-11 w-11 rounded-full bg-foreground/40 backdrop-blur flex items-center justify-center"
+            aria-label="Back"
+          >
+            <ArrowLeft className="h-5 w-5 text-white" strokeWidth={2.6} />
+          </button>
+        )}
       </div>
 
       {/* Action row */}
       <div className="px-5 py-4 flex gap-3">
         <button
-          onClick={() => camRef.current?.click()}
+          onClick={camState === "live" ? capture : startCam}
           className="flex-1 rounded-2xl py-3 font-bold text-white text-sm active:scale-95"
           style={{ background: DARK }}
         >
-          Capture
+          {camState === "live" ? "Capture" : "Open camera"}
         </button>
         <button
           onClick={() => fileRef.current?.click()}
@@ -117,7 +167,6 @@ export const ScanTab = () => {
         </button>
       </div>
 
-      <input ref={camRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => onFile(e.target.files?.[0] || null)} />
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => onFile(e.target.files?.[0] || null)} />
 
       <div className="px-5 pb-6 space-y-3">

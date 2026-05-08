@@ -200,12 +200,6 @@ export const RoutineTab = ({ onFindProducts }: { onFindProducts?: (q: string) =>
           <StepCard key={i} s={s} n={i + 1} onFind={(q) => onFindProducts?.(q)} />
         ))}
 
-        <button
-          onClick={generate}
-          className="text-xs font-semibold px-3 py-1.5 rounded-full bg-white/80 text-foreground mx-auto block mt-2"
-        >
-          Regenerate
-        </button>
         <p className="text-[11px] text-center text-foreground/70 pt-2">
           Dermo AI does not replace professional medical care.
         </p>

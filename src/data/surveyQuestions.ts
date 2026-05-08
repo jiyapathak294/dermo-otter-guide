@@ -69,7 +69,7 @@ export const questions: Question[] = [
     options: opts("Straight", "Wavy", "Curly", "Coily", "Unsure"),
     showIf: (a) => has(a, "focus", "Hair") },
   { id: "scalp", branch: "hair", type: "single", question: "How would you describe your scalp?",
-    options: opts("Oily", "Dry", "Flaky", "Sensitive", "Normal"),
+    options: opts("Oily", "Dry", "Combination", "Flaky", "Sensitive", "Normal"),
     showIf: (a) => has(a, "focus", "Hair") },
   { id: "hairConcerns", branch: "hair", type: "multi", question: "What are your main hair concerns?",
     options: opts("Hair loss", "Hair thinning", "Breakage", "Frizz", "Dryness", "Dandruff", "Oily hair", "Split ends", "Slow growth", "Scalp acne", "Heat damage", "Itchy scalp"),
@@ -99,9 +99,6 @@ export const questions: Question[] = [
     showIf: (a) => has(a, "focus", "Nails") },
 
   // GOALS — SEPARATED
-  { id: "skinGoals", type: "multi", question: "What are your skin goals?",
-    options: opts("Clear acne", "Brighten skin", "Reduce redness", "Fade dark spots", "Improve hydration", "Smooth texture", "Reduce wrinkles", "Build a routine"),
-    showIf: (a) => has(a, "focus", "Skin") },
   { id: "hairGoals", type: "multi", question: "What are your hair goals?",
     options: opts("Reduce hair loss", "Improve scalp health", "Reduce frizz", "Improve hair growth", "Reduce breakage", "Add shine"),
     showIf: (a) => has(a, "focus", "Hair") },
