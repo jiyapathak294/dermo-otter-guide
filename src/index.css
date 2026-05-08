@@ -74,7 +74,7 @@
     @apply mx-auto bg-white relative overflow-hidden;
     width: 100%;
     max-width: 420px;
-    min-height: 100dvh;
+    height: 100dvh;
     box-shadow: 0 0 60px -10px hsl(210 30% 40% / 0.15);
   }
 }

@@ -69,7 +69,7 @@ export const questions: Question[] = [
     options: opts("Straight", "Wavy", "Curly", "Coily", "Unsure"),
     showIf: (a) => has(a, "focus", "Hair") },
   { id: "scalp", branch: "hair", type: "single", question: "How would you describe your scalp?",
-    options: opts("Oily", "Dry", "Flaky", "Sensitive", "Normal"),
+    options: opts("Oily", "Dry", "Combination", "Flaky", "Sensitive", "Normal"),
     showIf: (a) => has(a, "focus", "Hair") },
   { id: "hairConcerns", branch: "hair", type: "multi", question: "What are your main hair concerns?",
     options: opts("Hair loss", "Hair thinning", "Breakage", "Frizz", "Dryness", "Dandruff", "Oily hair", "Split ends", "Slow growth", "Scalp acne", "Heat damage", "Itchy scalp"),
