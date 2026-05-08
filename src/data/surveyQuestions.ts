@@ -99,9 +99,6 @@ export const questions: Question[] = [
     showIf: (a) => has(a, "focus", "Nails") },
 
   // GOALS — SEPARATED
-  { id: "skinGoals", type: "multi", question: "What are your skin goals?",
-    options: opts("Clear acne", "Brighten skin", "Reduce redness", "Fade dark spots", "Improve hydration", "Smooth texture", "Reduce wrinkles", "Build a routine"),
-    showIf: (a) => has(a, "focus", "Skin") },
   { id: "hairGoals", type: "multi", question: "What are your hair goals?",
     options: opts("Reduce hair loss", "Improve scalp health", "Reduce frizz", "Improve hair growth", "Reduce breakage", "Add shine"),
     showIf: (a) => has(a, "focus", "Hair") },
