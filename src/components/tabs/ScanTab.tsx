@@ -48,14 +48,20 @@ export const ScanTab = () => {
     setCamState("requesting");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "environment" } }, audio: false,
+        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 1280 } },
+        audio: false,
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play().catch(() => {});
-      }
       setCamState("live");
+      // Wait for the <video> element to mount, then attach the stream
+      requestAnimationFrame(async () => {
+        const v = videoRef.current;
+        if (!v) return;
+        v.srcObject = stream;
+        v.muted = true;
+        v.setAttribute("playsinline", "true");
+        try { await v.play(); } catch { /* ignored */ }
+      });
     } catch (e: any) {
       setCamState(e?.name === "NotAllowedError" ? "denied" : "unavailable");
     }
