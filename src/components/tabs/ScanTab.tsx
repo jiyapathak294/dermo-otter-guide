@@ -112,12 +112,20 @@ export const ScanTab = () => {
 
       {/* Viewport */}
       <div className="relative aspect-[3/4.2] bg-spa-mist overflow-hidden">
-        {imageData ? (
+        {imageData && (
           <img src={imageData} alt="Scanned product" className="w-full h-full object-cover" />
-        ) : camState === "live" ? (
-          <video ref={videoRef} playsInline muted className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-spa-mist to-baby-blue/40 flex flex-col items-center justify-center gap-3 px-6 text-center">
+        )}
+        {!imageData && (
+          <video
+            ref={videoRef}
+            playsInline
+            muted
+            autoPlay
+            className={`w-full h-full object-cover bg-black ${camState === "live" ? "block" : "hidden"}`}
+          />
+        )}
+        {!imageData && camState !== "live" && (
+          <div className="absolute inset-0 bg-gradient-to-br from-spa-mist to-baby-blue/40 flex flex-col items-center justify-center gap-3 px-6 text-center">
             {camState === "denied" && <p className="text-sm text-destructive">Camera permission denied. Enable it in your browser settings.</p>}
             {camState === "unavailable" && <p className="text-sm text-muted-foreground">Camera unavailable on this device. Use the library instead.</p>}
             {camState === "requesting" && <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />}
@@ -132,7 +140,7 @@ export const ScanTab = () => {
           </div>
         )}
 
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="relative w-[78%] aspect-square"><Brackets /></div>
         </div>
 
