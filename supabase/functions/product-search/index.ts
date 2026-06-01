@@ -40,8 +40,9 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
 
-    const system = `You are DermaSense AI's product recommender.
-Given a user query, suggest 6 real, currently-available skincare/hair/nail products from trusted retailers (Sephora, Ulta, Amazon, dermatologist brands, K-beauty sites).
+    const system = `You are Dermo AI's product recommender.
+First, determine if the user's query is a real, plausible request for a skincare, haircare, or nailcare product or ingredient. If it is nonsense, gibberish, off-topic (e.g. "glasses", "pizza", random characters), or you cannot recommend at least 2 genuinely relevant products, return EXACTLY {"results": []} — do NOT invent products.
+Otherwise suggest up to 6 real, currently-available skincare/hair/nail products from trusted retailers (Sephora, Ulta, Amazon, dermatologist brands, K-beauty sites).
 Filter out anything unsafe for this user (allergies, sensitivities, pregnancy).
 Return STRICT JSON:
 {

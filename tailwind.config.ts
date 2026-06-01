@@ -69,8 +69,8 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        bubble: ["Fredoka", "system-ui", "sans-serif"],
-        sans: ["Inter", "system-ui", "sans-serif"],
+        bubble: ["Plus Jakarta Sans", "system-ui", "sans-serif"],
+        sans: ["Nunito", "system-ui", "sans-serif"],
       },
       keyframes: {
         "accordion-down": { from: { height: "0" }, to: { height: "var(--radix-accordion-content-height)" } },

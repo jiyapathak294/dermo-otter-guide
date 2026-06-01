@@ -223,7 +223,7 @@ export const ScanTab = () => {
   );
 
   const CandidatesSheet = (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end" role="dialog" aria-modal="true">
+    <div className="absolute inset-0 z-50 flex flex-col justify-end" role="dialog" aria-modal="true">
       <button className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={reset} aria-label="Close" />
       <div className="relative bg-white rounded-t-[28px] max-h-[82%] flex flex-col animate-[slideUp_0.25s_ease-out]">
         <div className="pt-3 pb-2 flex justify-center"><span className="h-1.5 w-12 rounded-full bg-foreground/20" /></div>
@@ -378,7 +378,7 @@ export const ScanTab = () => {
 
       {/* Detecting overlay while popup is loading */}
       {detecting && stage === "scan" && (
-        <div className="fixed inset-0 z-40 bg-black/40 flex items-center justify-center">
+        <div className="absolute inset-0 z-40 bg-black/40 flex items-center justify-center">
           <div className="rounded-2xl bg-white px-5 py-4 inline-flex items-center gap-3 shadow-xl">
             <Loader2 className="h-5 w-5 animate-spin" />
             <span className="text-sm font-semibold">Identifying product…</span>
