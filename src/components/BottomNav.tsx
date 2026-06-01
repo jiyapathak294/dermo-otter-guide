@@ -15,7 +15,7 @@ const tabs: { id: Tab; label: string; Icon: any }[] = [
   { id: "routine", label: "Routine", Icon: Sparkles },
   { id: "products", label: "Products", Icon: ShoppingBag },
   { id: "scan", label: "Scan", Icon: ScanIcon },
-  { id: "chat", label: "Derma", Icon: MessageCircle },
+  { id: "chat", label: "Dermo", Icon: MessageCircle },
   { id: "goals", label: "Goals", Icon: Target },
   { id: "learn", label: "Learn", Icon: BookOpen },
 ];
