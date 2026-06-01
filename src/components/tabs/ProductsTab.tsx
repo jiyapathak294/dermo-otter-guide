@@ -82,7 +82,14 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
 
         {/* Results card */}
         <div className="rounded-[26px] bg-white p-5 shadow-soft min-h-[60vh]">
-          <h2 className="font-heading text-2xl text-foreground">Top Results</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-heading text-2xl text-foreground">
+              {searched ? "Top Results" : "Recommended"}
+            </h2>
+            {searched && (
+              <button onClick={clearSearch} className="text-xs font-bold text-foreground/70 underline">Clear</button>
+            )}
+          </div>
           <div className="flex gap-2 mt-3">
             <button className="rounded-full border border-foreground/80 px-4 py-1.5 text-xs font-bold inline-flex items-center gap-1.5">
               FILTER <SlidersHorizontal className="h-3 w-3" />
@@ -95,51 +102,58 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
           {loading && <div className="flex justify-center py-10"><Loader2 className="h-7 w-7 animate-spin" stroke={GREEN} /></div>}
           {error && <div className="mt-3 rounded-2xl bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
 
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            {results.map((p, i) => (
-              <div key={i} className="flex flex-col">
-                <div className="aspect-square rounded-[22px] overflow-hidden bg-spa-mist">
-                  {p.image ? (
-                    <img src={p.image} alt={p.name} loading="lazy" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-b from-baby-blue/40 to-spa-mist" />
-                  )}
+          {(() => {
+            const display = searched ? results : RECOMMENDED;
+            return (
+              <>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  {display.map((p, i) => (
+                    <div key={i} className="flex flex-col">
+                      <div className="aspect-square rounded-[22px] overflow-hidden bg-spa-mist">
+                        {p.image ? (
+                          <img src={p.image} alt={p.name} loading="lazy" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-b from-baby-blue/40 to-spa-mist" />
+                        )}
+                      </div>
+                      <p className="mt-2 text-[11px] font-bold tracking-wide text-foreground uppercase">{p.brand}</p>
+                      <p className="text-sm text-foreground leading-tight">{p.name}</p>
+                      <div className="flex items-center gap-1 mt-1">
+                        {[1,2,3,4,5].map((s) => <Star key={s} className="h-3 w-3" fill="#000" stroke="#000" />)}
+                        <span className="text-[10px] text-muted-foreground ml-1">(rating)</span>
+                      </div>
+                      <a
+                        href={p.product_link || p.search_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-1 inline-flex items-center gap-1 self-start rounded-full px-3 py-1 text-[11px] font-semibold text-white"
+                        style={{ background: GREEN }}
+                      >
+                        {p.source || p.retailer} <ExternalLink className="h-2.5 w-2.5" />
+                      </a>
+                      <div className="flex gap-2 mt-1.5">
+                        <button onClick={() => handleAddBuy(p)} className="text-[10px] font-semibold text-foreground/80 inline-flex items-center gap-0.5">
+                          <Plus className="h-3 w-3" /> Buy list
+                        </button>
+                      </div>
+                      {p.warning && (
+                        <div className="mt-1 flex items-start gap-1 text-[10px] text-yellow-800">
+                          <AlertTriangle className="h-3 w-3 flex-none mt-0.5" />
+                          <span>{p.warning}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
-                <p className="mt-2 text-[11px] font-bold tracking-wide text-foreground uppercase">{p.brand}</p>
-                <p className="text-sm text-foreground leading-tight">{p.name}</p>
-                <div className="flex items-center gap-1 mt-1">
-                  {[1,2,3,4,5].map((s) => <Star key={s} className="h-3 w-3" fill="#000" stroke="#000" />)}
-                  <span className="text-[10px] text-muted-foreground ml-1">(rating)</span>
-                </div>
-                <a
-                  href={p.product_link || p.search_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-1 inline-flex items-center gap-1 self-start rounded-full px-3 py-1 text-[11px] font-semibold text-white"
-                  style={{ background: GREEN }}
-                >
-                  {p.source || p.retailer} <ExternalLink className="h-2.5 w-2.5" />
-                </a>
-                <div className="flex gap-2 mt-1.5">
-                  <button onClick={() => handleAddBuy(p)} className="text-[10px] font-semibold text-foreground/80 inline-flex items-center gap-0.5">
-                    <Plus className="h-3 w-3" /> Buy list
-                  </button>
-                </div>
-                {p.warning && (
-                  <div className="mt-1 flex items-start gap-1 text-[10px] text-yellow-800">
-                    <AlertTriangle className="h-3 w-3 flex-none mt-0.5" />
-                    <span>{p.warning}</span>
+
+                {!loading && searched && results.length === 0 && !error && (
+                  <div className="text-center text-muted-foreground text-sm py-12">
+                    No results found. Try a different search term.
                   </div>
                 )}
-              </div>
-            ))}
-          </div>
-
-          {!loading && results.length === 0 && !error && (
-            <div className="text-center text-muted-foreground text-sm py-12">
-              Search for a product or routine ingredient.
-            </div>
-          )}
+              </>
+            );
+          })()}
 
           {buyList.length > 0 && (
             <div className="mt-6 space-y-2 border-t border-border pt-4">
