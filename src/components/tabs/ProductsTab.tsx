@@ -13,9 +13,17 @@ type Product = {
 const GREEN = "#3a8a5e";
 const GREEN_LIGHT = "#5fa97c";
 
+const RECOMMENDED: Product[] = [
+  { name: "Hydrating Facial Cleanser", brand: "CeraVe", retailer: "Amazon", key_ingredients: ["Ceramides","Hyaluronic Acid"], price_range: "$15", why_recommended: "Gentle daily cleanser for most skin types.", warning: null, search_url: "https://www.amazon.com/s?k=cerave+hydrating+facial+cleanser", image: "https://m.media-amazon.com/images/I/61IjzpvE7DL._SL1500_.jpg" },
+  { name: "Daily Moisturizing Lotion", brand: "CeraVe", retailer: "Amazon", key_ingredients: ["Ceramides","Hyaluronic Acid"], price_range: "$17", why_recommended: "Lightweight all-day hydration.", warning: null, search_url: "https://www.amazon.com/s?k=cerave+daily+moisturizing+lotion", image: "https://m.media-amazon.com/images/I/71uG7zlMRzL._SL1500_.jpg" },
+  { name: "Mineral Sunscreen SPF 50", brand: "EltaMD", retailer: "Amazon", key_ingredients: ["Zinc Oxide","Niacinamide"], price_range: "$41", why_recommended: "Derm-favorite, lightweight, tinted.", warning: null, search_url: "https://www.amazon.com/s?k=eltamd+uv+clear+spf+46", image: "https://m.media-amazon.com/images/I/61tx2DyMlSL._SL1500_.jpg" },
+  { name: "Niacinamide 10% + Zinc 1%", brand: "The Ordinary", retailer: "Sephora", key_ingredients: ["Niacinamide","Zinc"], price_range: "$8", why_recommended: "Targets pores, oiliness, blemishes.", warning: null, search_url: "https://www.sephora.com/search?keyword=ordinary+niacinamide", image: "https://www.sephora.com/productimages/sku/s2118695-main-zoom.jpg" },
+];
+
 export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
   const [q, setQ] = useState(initialQuery || "");
   const [results, setResults] = useState<Product[]>([]);
+  const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [buyList, setBuyList] = useState<ProfileProduct[]>(loadProfile()?.buyList || []);
@@ -25,14 +33,21 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
   const search = async (query?: string) => {
     const text = (query ?? q).trim();
     if (!text) return;
-    setLoading(true); setError(null); setResults([]);
+    setLoading(true); setError(null); setResults([]); setSearched(true);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
     try {
       const { data, error } = await supabase.functions.invoke("product-search", { body: { query: text, profile: loadProfile() } });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setResults(data.results || []);
-    } catch (e: any) { setError(e.message); } finally { setLoading(false); }
+    } catch (e: any) {
+      if (e.name === "AbortError") setError("Search timed out. Try again.");
+      else setError(e.message);
+    } finally { clearTimeout(timeout); setLoading(false); }
   };
+
+  const clearSearch = () => { setQ(""); setResults([]); setSearched(false); setError(null); };
 
   const productKey = (p: Product) => `${p.brand}-${p.name}`.toLowerCase().replace(/\s+/g, "-");
   const handleAddBuy = (p: Product) => {
