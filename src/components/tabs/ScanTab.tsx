@@ -166,9 +166,15 @@ export const ScanTab = () => {
             {camState === "unavailable" && <p className="text-xs text-muted-foreground">Camera unavailable on this device. Use the library instead.</p>}
             {camState === "requesting" && <Loader2 className="h-6 w-6 animate-spin text-foreground/60" />}
             {(camState === "idle" || camState === "denied" || camState === "unavailable") && (
-              <button onClick={startCam} className="rounded-full bg-foreground text-white px-5 py-3 text-sm font-bold inline-flex items-center gap-2 active:scale-95">
-                <Camera className="h-4 w-4" /> Enable camera
-              </button>
+              <div className="flex flex-col items-center gap-3 w-full max-w-[220px]">
+                <button onClick={startCam} className="w-full rounded-full bg-foreground text-white px-5 py-3 text-sm font-bold inline-flex items-center justify-center gap-2 active:scale-95">
+                  <Camera className="h-4 w-4" /> Enable camera
+                </button>
+                <span className="text-xs text-foreground/50 font-medium">or</span>
+                <button onClick={() => fileRef.current?.click()} className="w-full rounded-full bg-white/80 text-foreground px-5 py-3 text-sm font-bold inline-flex items-center justify-center gap-2 active:scale-95 border border-foreground/10">
+                  <ImageIcon className="h-4 w-4" /> From library
+                </button>
+              </div>
             )}
           </div>
         )}
@@ -198,22 +204,14 @@ export const ScanTab = () => {
         )}
       </div>
 
-      {/* Bottom row — no capture button, only secondary actions */}
-      <div className="px-5 py-4 flex gap-3">
-        <button onClick={() => fileRef.current?.click()} className="flex-1 rounded-2xl py-3 font-bold text-sm bg-spa-mist text-foreground active:scale-95 inline-flex items-center justify-center gap-2">
-          <ImageIcon className="h-4 w-4" /> From library
-        </button>
-        {camState !== "live" && (
-          <button onClick={startCam} className="flex-1 rounded-2xl py-3 font-bold text-sm text-white active:scale-95" style={{ background: DARK }}>
-            Open camera
-          </button>
-        )}
-        {camState === "live" && (
+      {/* Bottom row — only shown when camera is live */}
+      {camState === "live" && (
+        <div className="px-5 py-4 flex gap-3">
           <button onClick={autoCapture} disabled={detecting} className="flex-1 rounded-2xl py-3 font-bold text-sm text-white active:scale-95 disabled:opacity-60" style={{ background: DARK }}>
             {detecting ? "Identifying…" : "Identify now"}
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => onFile(e.target.files?.[0] || null)} />
 
