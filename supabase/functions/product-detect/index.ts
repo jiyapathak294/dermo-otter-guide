@@ -11,8 +11,15 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
 
-    const system = `You are a visual product lens. Given a photo of a skincare/hair/nail product (or a label), identify up to 5 most likely matching real, currently-sold consumer products. Order by confidence (highest first). Return STRICT JSON:
+    const system = `You are a visual product lens for SKINCARE, HAIRCARE, and NAILCARE products only.
+
+FIRST decide if the image actually shows such a consumer product (a bottle, jar, tube, palette, tool, or its label/packaging). If the image instead shows a person, face, body part, animal, food, scenery, random object, screenshot, gibberish, or any non-product subject, return EXACTLY:
+{ "is_product": false, "candidates": [] }
+DO NOT invent products in that case.
+
+If it IS a real skincare/hair/nail product, identify up to 5 most likely matching real, currently-sold consumer products, ordered by confidence (highest first). Return STRICT JSON:
 {
+  "is_product": true,
   "candidates": [
     {
       "brand": string,
@@ -24,7 +31,7 @@ Deno.serve(async (req) => {
     }
   ]
 }
-Always return at least 1 candidate; never invent obviously fake brands.`;
+Never invent obviously fake brands. Only return is_product:true when you can clearly see product packaging.`;
 
     const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
