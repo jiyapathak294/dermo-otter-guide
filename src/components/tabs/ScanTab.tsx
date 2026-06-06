@@ -105,8 +105,20 @@ export const ScanTab = () => {
     try {
       const { data, error } = await supabase.functions.invoke("product-detect", { body: { image: img } });
       if (error) throw error;
+      if (data?.error && data?.is_product === false) {
+        // Not a product — surface a friendly message and stay on scan screen
+        setError(data.error || "No product shown. Please point the camera at a skincare, hair, or nail product.");
+        setCandidates([]);
+        setStage("scan");
+        return;
+      }
       if (data?.error) throw new Error(data.error);
       const list: Candidate[] = data?.candidates || [];
+      if (list.length === 0) {
+        setError("No product shown. Please point the camera at a skincare, hair, or nail product.");
+        setStage("scan");
+        return;
+      }
       setCandidates(list);
       setStage("candidates");
     } catch (e: any) { setError(e.message); setStage("scan"); }
