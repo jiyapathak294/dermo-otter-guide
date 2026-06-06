@@ -56,6 +56,14 @@ Never invent obviously fake brands. Only return is_product:true when you can cle
     const data = await r.json();
     const out = JSON.parse(data.choices?.[0]?.message?.content || "{}");
 
+    // Hard guard: if model says it's not a product, or candidates are empty, return a clean signal.
+    if (out.is_product === false || !Array.isArray(out.candidates) || out.candidates.length === 0) {
+      return new Response(
+        JSON.stringify({ is_product: false, candidates: [], error: "No product shown. Please point the camera at a skincare, hair, or nail product." }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     // Enrich with product image via SerpAPI if available
     const SERPAPI_KEY = Deno.env.get("SERPAPI_KEY");
     if (SERPAPI_KEY && Array.isArray(out.candidates)) {
