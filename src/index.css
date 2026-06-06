@@ -40,6 +40,8 @@
     --baby-blue: 205 90% 85%;
     --baby-blue-deep: 210 85% 70%;
     --jazz-blue: 215 100% 50%;
+    --lavender: 255 70% 78%;
+    --lavender-deep: 260 55% 55%;
     --navy: 222 65% 22%;
     --spa-mist: 195 60% 96%;
 
@@ -57,6 +59,11 @@
     font-family: 'Nunito', system-ui, sans-serif;
     font-weight: 500;
   }
+  /* Global button hover transition (color/filter shift on hover) */
+  button { transition: filter 180ms ease, background-color 180ms ease, color 180ms ease, transform 120ms ease, box-shadow 180ms ease; }
+  button:not(:disabled):hover { filter: brightness(1.08) saturate(1.05); }
+  button:not(:disabled):active { transform: scale(0.97); }
+  a { transition: color 180ms ease, opacity 180ms ease; }
   .font-heading {
     font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
     letter-spacing: -0.02em;
