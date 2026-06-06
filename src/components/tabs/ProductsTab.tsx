@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { loadProfile, addToBuyList, removeFromBuyList, updateProfile, Product as ProfileProduct } from "@/lib/profile";
-import { Search, Loader2, ExternalLink, AlertTriangle, Plus, Trash2, SlidersHorizontal, ArrowDownNarrowWide, Star, X, CheckCircle2 } from "lucide-react";
+import { loadProfile, updateProfile } from "@/lib/profile";
+import { Search, Loader2, ExternalLink, AlertTriangle, Plus, SlidersHorizontal, ArrowDownNarrowWide, Star, X, CheckCircle2 } from "lucide-react";
 import { DermoLogo } from "@/components/DermoLogo";
 
 type Product = {
