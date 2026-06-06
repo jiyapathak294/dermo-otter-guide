@@ -9,7 +9,8 @@ import { saveProfile, loadProfile } from "@/lib/profile";
 type Stage = "splash" | "derma" | "survey" | "done" | "home";
 
 const Index = () => {
-  const [stage, setStage] = useState<Stage>(loadProfile() ? "home" : "splash");
+  // Always start on the survey page for preview/demo purposes
+  const [stage, setStage] = useState<Stage>("survey");
 
   return (
     <main>
