@@ -96,3 +96,19 @@
   from { transform: translateY(100%); }
   to   { transform: translateY(0); }
 }
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+@keyframes stepFadeIn {
+  0%   { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.step-shimmer {
+  background: linear-gradient(90deg, hsl(var(--spa-mist)) 0%, hsl(var(--baby-blue) / 0.4) 50%, hsl(var(--spa-mist)) 100%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+.animate-step-in {
+  animation: stepFadeIn 0.45s ease-out both;
+}
