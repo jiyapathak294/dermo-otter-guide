@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { loadProfile, updateProfile } from "@/lib/profile";
+import { loadProfile } from "@/lib/profile";
 import { Sun, Moon, AlertTriangle, Sparkles, Plus, X, Loader2 } from "lucide-react";
 import { CautionModal } from "@/components/CautionModal";
 import { DermoLogo } from "@/components/DermoLogo";
