@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { loadProfile, addToBuyList, removeFromBuyList, Product as ProfileProduct } from "@/lib/profile";
-import { Search, Loader2, ExternalLink, AlertTriangle, Plus, Trash2, SlidersHorizontal, ArrowDownNarrowWide, Star } from "lucide-react";
+import { loadProfile, updateProfile } from "@/lib/profile";
+import { Search, Loader2, ExternalLink, AlertTriangle, Plus, SlidersHorizontal, ArrowDownNarrowWide, Star, X, CheckCircle2 } from "lucide-react";
 import { DermoLogo } from "@/components/DermoLogo";
 
 type Product = {
@@ -20,13 +20,163 @@ const RECOMMENDED: Product[] = [
   { name: "Niacinamide 10% + Zinc 1%", brand: "The Ordinary", retailer: "Sephora", key_ingredients: ["Niacinamide","Zinc"], price_range: "$8", why_recommended: "Targets pores, oiliness, blemishes.", warning: null, search_url: "https://www.sephora.com/search?keyword=ordinary+niacinamide", image: "https://www.sephora.com/productimages/sku/s2118695-main-zoom.jpg" },
 ];
 
+const productKey = (p: Product) => `${p.brand}-${p.name}`.toLowerCase().replace(/\s+/g, "-");
+const slotKey = (focus: string, time: string, stepName: string) =>
+  `${focus.toLowerCase()}:${time}:${stepName}`.replace(/\s+/g, "-").toLowerCase();
+
+type Slot = { focus: "Skin" | "Hair" | "Nails"; time: string; stepName: string; key: string };
+
+// ---- Assign product to routine dialog ----
+const AssignDialog = ({ product, onClose }: { product: Product; onClose: () => void }) => {
+  const [confirmReplace, setConfirmReplace] = useState<Slot | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const profile = loadProfile();
+  const routine = useMemo(() => {
+    try { return JSON.parse(localStorage.getItem("dermo.routine.v1") || "null"); }
+    catch { return null; }
+  }, []);
+  const selected: Record<string, any> = profile?.selectedProducts || {};
+
+  const slots: Slot[] = useMemo(() => {
+    const out: Slot[] = [];
+    if (!routine) return out;
+    (routine.skin?.morning || []).forEach((s: any) => out.push({ focus: "Skin", time: "morning", stepName: s.step, key: slotKey("Skin", "morning", s.step) }));
+    (routine.skin?.night || []).forEach((s: any) => out.push({ focus: "Skin", time: "night", stepName: s.step, key: slotKey("Skin", "night", s.step) }));
+    (routine.hair?.weekly || []).forEach((s: any) => out.push({ focus: "Hair", time: "weekly", stepName: s.step, key: slotKey("Hair", "weekly", s.step) }));
+    (routine.nails?.daily || []).forEach((s: any) => out.push({ focus: "Nails", time: "daily", stepName: s.step, key: slotKey("Nails", "daily", s.step) }));
+    return out;
+  }, [routine]);
+
+  const assignTo = (s: Slot) => {
+    const existing = selected[s.key];
+    if (existing) {
+      setConfirmReplace(s);
+      return;
+    }
+    doAssign(s);
+  };
+
+  const doAssign = (s: Slot) => {
+    const next = {
+      ...(selected || {}),
+      [s.key]: {
+        id: productKey(product),
+        name: product.name,
+        brand: product.brand,
+        image: product.image,
+        url: product.product_link || product.search_url,
+        price: product.price || product.price_range,
+      },
+    };
+    updateProfile({ selectedProducts: next });
+    window.dispatchEvent(new CustomEvent("dermo:profile-updated"));
+    setSuccess(`Added to ${s.focus} · ${s.time} — ${s.stepName}`);
+    setConfirmReplace(null);
+    setTimeout(() => onClose(), 1200);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/55 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="w-full max-w-[400px] bg-white rounded-t-3xl sm:rounded-3xl p-5 max-h-[80vh] overflow-y-auto animate-[slideUp_0.25s_ease-out] sm:animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-heading text-xl text-foreground">Add as chosen product</h3>
+          <button onClick={onClose} aria-label="Close" className="h-8 w-8 rounded-full bg-spa-mist flex items-center justify-center">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3 mb-4 p-3 rounded-2xl bg-spa-mist">
+          {product.image ? (
+            <img src={product.image} alt={product.name} className="h-14 w-14 rounded-xl object-cover" />
+          ) : (
+            <div className="h-14 w-14 rounded-xl bg-white" />
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] uppercase font-bold text-muted-foreground">{product.brand}</p>
+            <p className="text-sm font-heading truncate">{product.name}</p>
+          </div>
+        </div>
+
+        {success && (
+          <div className="rounded-2xl bg-green-50 border border-green-200 p-3 text-sm text-green-800 inline-flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4" /> {success}
+          </div>
+        )}
+
+        {confirmReplace && (
+          <div className="rounded-2xl border border-yellow-300 bg-yellow-50 p-4 mb-3">
+            <div className="flex items-center gap-2 text-yellow-900 font-bold mb-1">
+              <AlertTriangle className="h-4 w-4" /> Replace existing product?
+            </div>
+            <p className="text-xs text-yellow-900 mb-3">
+              <span className="font-semibold">{confirmReplace.focus} · {confirmReplace.time} — {confirmReplace.stepName}</span> already has{" "}
+              <span className="font-semibold">{selected[confirmReplace.key]?.brand} {selected[confirmReplace.key]?.name}</span>.
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setConfirmReplace(null)} className="flex-1 rounded-xl bg-white border border-border py-2 text-xs font-bold">
+                Cancel
+              </button>
+              <button onClick={() => doAssign(confirmReplace)} className="flex-1 rounded-xl bg-yellow-600 text-white py-2 text-xs font-bold">
+                Replace
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!success && !confirmReplace && (
+          <>
+            <p className="text-xs text-muted-foreground mb-2">Pick a routine step to assign this product to:</p>
+            {slots.length === 0 ? (
+              <div className="rounded-2xl bg-spa-mist p-4 text-sm text-foreground/80">
+                No routine yet. Generate a routine first, or add a custom step from the Routine page (+ button).
+              </div>
+            ) : (
+              <ul className="space-y-2">
+                {slots.map((s) => {
+                  const existing = selected[s.key];
+                  return (
+                    <li key={s.key}>
+                      <button
+                        onClick={() => assignTo(s)}
+                        className="w-full flex items-center gap-3 p-3 rounded-2xl border border-border hover:bg-spa-mist text-left transition-colors"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                            {s.focus} · {s.time}
+                          </p>
+                          <p className="text-sm font-heading text-foreground truncate">{s.stepName}</p>
+                          {existing && (
+                            <p className="text-[11px] text-yellow-700 mt-0.5">Currently: {existing.brand} {existing.name}</p>
+                          )}
+                        </div>
+                        <Plus className="h-4 w-4 text-foreground/60" />
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+
+            <div className="mt-4 rounded-2xl bg-baby-blue/30 p-3 text-xs text-foreground/80">
+              Doesn't fit your routine? Open the <span className="font-bold">Routine</span> page and tap the <span className="font-bold">+</span> button to add a new step for it.
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
   const [q, setQ] = useState(initialQuery || "");
   const [results, setResults] = useState<Product[]>([]);
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [buyList, setBuyList] = useState<ProfileProduct[]>(loadProfile()?.buyList || []);
+  const [assignTarget, setAssignTarget] = useState<Product | null>(null);
 
   useEffect(() => { if (initialQuery) search(initialQuery); }, [initialQuery]);
 
@@ -49,12 +199,6 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
 
   const clearSearch = () => { setQ(""); setResults([]); setSearched(false); setError(null); };
 
-  const productKey = (p: Product) => `${p.brand}-${p.name}`.toLowerCase().replace(/\s+/g, "-");
-  const handleAddBuy = (p: Product) => {
-    const next = addToBuyList({ id: productKey(p), name: p.name, brand: p.brand, retailer: p.source || p.retailer, url: p.product_link || p.search_url, image: p.image, price: p.price || p.price_range });
-    setBuyList(next.buyList || []);
-  };
-
   return (
     <div className="relative min-h-full bg-white">
       <div className="px-5 pt-7 pb-5 flex items-center gap-3 bg-white">
@@ -75,7 +219,7 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
             placeholder="e.g. salicylic acid cleanser for acne"
             className="flex-1 bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground"
           />
-          <button onClick={() => search()} className="h-10 w-10 rounded-full flex items-center justify-center text-white" style={{ background: GREEN }}>
+          <button onClick={() => search()} className="h-10 w-10 rounded-full flex items-center justify-center text-white hover:opacity-90" style={{ background: GREEN }}>
             <Search className="h-5 w-5" />
           </button>
         </div>
@@ -91,10 +235,10 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
             )}
           </div>
           <div className="flex gap-2 mt-3">
-            <button className="rounded-full border border-foreground/80 px-4 py-1.5 text-xs font-bold inline-flex items-center gap-1.5">
+            <button className="rounded-full border border-foreground/80 px-4 py-1.5 text-xs font-bold inline-flex items-center gap-1.5 hover:bg-foreground hover:text-white transition-colors">
               FILTER <SlidersHorizontal className="h-3 w-3" />
             </button>
-            <button className="rounded-full border border-foreground/80 px-4 py-1.5 text-xs font-bold inline-flex items-center gap-1.5">
+            <button className="rounded-full border border-foreground/80 px-4 py-1.5 text-xs font-bold inline-flex items-center gap-1.5 hover:bg-foreground hover:text-white transition-colors">
               SORT BY <ArrowDownNarrowWide className="h-3 w-3" />
             </button>
           </div>
@@ -108,12 +252,14 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
               <>
                 <div className="grid grid-cols-2 gap-4 mt-4">
                   {display.map((p, i) => (
-                    <div key={i} className="flex flex-col">
-                      <div className="aspect-square rounded-[22px] overflow-hidden bg-spa-mist">
+                    <div key={i} className="flex flex-col animate-step-in" style={{ animationDelay: `${i * 80}ms` }}>
+                      <div className="aspect-square rounded-[22px] overflow-hidden bg-spa-mist relative">
                         {p.image ? (
-                          <img src={p.image} alt={p.name} loading="lazy" className="w-full h-full object-cover" />
+                          <img src={p.image} alt={p.name} loading="lazy" className="w-full h-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-b from-baby-blue/40 to-spa-mist" />
+                          <div className="w-full h-full bg-gradient-to-br from-baby-blue/40 to-spa-mist flex items-center justify-center text-foreground/40 text-[10px] font-bold uppercase tracking-wider px-2 text-center">
+                            {p.brand}
+                          </div>
                         )}
                       </div>
                       <p className="mt-2 text-[11px] font-bold tracking-wide text-foreground uppercase">{p.brand}</p>
@@ -126,14 +272,17 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
                         href={p.product_link || p.search_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-1 inline-flex items-center gap-1 self-start rounded-full px-3 py-1 text-[11px] font-semibold text-white"
+                        className="mt-1 inline-flex items-center gap-1 self-start rounded-full px-3 py-1 text-[11px] font-semibold text-white hover:opacity-90"
                         style={{ background: GREEN }}
                       >
                         {p.source || p.retailer} <ExternalLink className="h-2.5 w-2.5" />
                       </a>
                       <div className="flex gap-2 mt-1.5">
-                        <button onClick={() => handleAddBuy(p)} className="text-[10px] font-semibold text-foreground/80 inline-flex items-center gap-0.5">
-                          <Plus className="h-3 w-3" /> Buy list
+                        <button
+                          onClick={() => setAssignTarget(p)}
+                          className="text-[10px] font-semibold text-foreground/80 inline-flex items-center gap-0.5 hover:text-foreground"
+                        >
+                          <Plus className="h-3 w-3" /> Add as chosen product
                         </button>
                       </div>
                       {p.warning && (
@@ -154,31 +303,10 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
               </>
             );
           })()}
-
-          {buyList.length > 0 && (
-            <div className="mt-6 space-y-2 border-t border-border pt-4">
-              <h3 className="font-heading text-foreground text-lg">Buy List</h3>
-              {buyList.map((b) => (
-                <div key={b.id} className="flex items-center gap-3 rounded-2xl border border-border p-3">
-                  {b.image ? (
-                    <img src={b.image} alt={b.name} loading="lazy" className="w-12 h-12 rounded-lg object-cover bg-spa-mist flex-none" />
-                  ) : (
-                    <div className="w-12 h-12 rounded-lg bg-spa-mist flex-none" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-heading text-foreground text-sm truncate">{b.brand}</p>
-                    <p className="text-xs text-muted-foreground truncate">{b.name}</p>
-                  </div>
-                  {b.url && <a href={b.url} target="_blank" rel="noreferrer" className="text-xs text-foreground underline">Open</a>}
-                  <button onClick={() => { const n = removeFromBuyList(b.id); setBuyList(n.buyList || []); }} aria-label="Remove">
-                    <Trash2 className="h-4 w-4 text-muted-foreground" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
+
+      {assignTarget && <AssignDialog product={assignTarget} onClose={() => setAssignTarget(null)} />}
     </div>
   );
 };

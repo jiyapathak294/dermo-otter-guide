@@ -105,8 +105,20 @@ export const ScanTab = () => {
     try {
       const { data, error } = await supabase.functions.invoke("product-detect", { body: { image: img } });
       if (error) throw error;
+      if (data?.error && data?.is_product === false) {
+        // Not a product — surface a friendly message and stay on scan screen
+        setError(data.error || "No product shown. Please point the camera at a skincare, hair, or nail product.");
+        setCandidates([]);
+        setStage("scan");
+        return;
+      }
       if (data?.error) throw new Error(data.error);
       const list: Candidate[] = data?.candidates || [];
+      if (list.length === 0) {
+        setError("No product shown. Please point the camera at a skincare, hair, or nail product.");
+        setStage("scan");
+        return;
+      }
       setCandidates(list);
       setStage("candidates");
     } catch (e: any) { setError(e.message); setStage("scan"); }
@@ -154,40 +166,42 @@ export const ScanTab = () => {
         <h1 className="font-heading text-[34px] text-foreground">Scan</h1>
       </div>
 
-      <div className="relative aspect-[3/4.2] bg-black overflow-hidden">
+      <div className="relative aspect-[3/4.6] bg-black overflow-hidden">
         {camState === "live" && (
           <video ref={videoRef} playsInline muted autoPlay className="w-full h-full object-cover" />
         )}
         {camState !== "live" && (
           <div className="absolute inset-0 bg-gradient-to-br from-spa-mist to-baby-blue/40 flex flex-col items-center justify-center gap-4 px-6 text-center">
             <Camera className="h-10 w-10 text-foreground/60" />
-            <p className="text-sm text-foreground/80 max-w-xs">Point the lens at a product. Dermo will identify it automatically — no button needed.</p>
-            {camState === "denied" && <p className="text-xs text-destructive">Camera permission denied. Enable it in your browser settings.</p>}
-            {camState === "unavailable" && <p className="text-xs text-muted-foreground">Camera unavailable on this device. Use the library instead.</p>}
+            <p className="text-xs text-foreground/80 max-w-[220px] leading-snug">Point the lens at a product. Dermo will identify it automatically.</p>
+            {camState === "denied" && <p className="text-[11px] text-destructive">Camera permission denied. Enable it in your browser settings.</p>}
+            {camState === "unavailable" && <p className="text-[11px] text-muted-foreground">Camera unavailable. Use the library instead.</p>}
             {camState === "requesting" && <Loader2 className="h-6 w-6 animate-spin text-foreground/60" />}
             {(camState === "idle" || camState === "denied" || camState === "unavailable") && (
-              <div className="flex flex-col items-center gap-3 w-full max-w-[220px]">
-                <button onClick={startCam} className="w-full rounded-full bg-foreground text-white px-5 py-3 text-sm font-bold inline-flex items-center justify-center gap-2 active:scale-95">
-                  <Camera className="h-4 w-4" /> Enable camera
+              <div className="flex flex-col items-center gap-2 w-full max-w-[200px]">
+                <button onClick={startCam} className="w-full rounded-full bg-foreground text-white px-4 py-2.5 text-xs font-bold inline-flex items-center justify-center gap-2 hover:bg-foreground/85">
+                  <Camera className="h-3.5 w-3.5" /> Enable camera
                 </button>
-                <span className="text-xs text-foreground/50 font-medium">or</span>
-                <button onClick={() => fileRef.current?.click()} className="w-full rounded-full bg-white/80 text-foreground px-5 py-3 text-sm font-bold inline-flex items-center justify-center gap-2 active:scale-95 border border-foreground/10">
-                  <ImageIcon className="h-4 w-4" /> From library
+                <span className="text-[10px] text-foreground/50 font-medium">or</span>
+                <button onClick={() => fileRef.current?.click()} className="w-full rounded-full bg-white/80 text-foreground px-4 py-2.5 text-xs font-bold inline-flex items-center justify-center gap-2 border border-foreground/10 hover:bg-white">
+                  <ImageIcon className="h-3.5 w-3.5" /> From library
                 </button>
               </div>
             )}
           </div>
         )}
 
-        {/* Bracket framing */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="relative w-[78%] aspect-square">
-            <Brackets />
-            {camState === "live" && scanLine && (
-              <div className="absolute inset-x-2 top-0 h-[3px] bg-white/90 shadow-[0_0_18px_4px_rgba(255,255,255,0.7)] animate-[scanline_2.4s_ease-in-out_infinite]" />
-            )}
+        {/* Bracket framing — only when live scanning so it doesn't crowd idle UI */}
+        {camState === "live" && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="relative w-[62%] aspect-square">
+              <Brackets />
+              {scanLine && (
+                <div className="absolute inset-x-2 top-0 h-[3px] bg-white/90 shadow-[0_0_18px_4px_rgba(255,255,255,0.7)] animate-[scanline_2.4s_ease-in-out_infinite]" />
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Status pill */}
         {camState === "live" && (
