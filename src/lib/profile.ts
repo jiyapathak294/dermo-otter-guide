@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+
 export type Product = {
   id: string;
   name: string;
@@ -35,27 +37,22 @@ export type UserProfile = {
   buyList?: Product[];
   chatHistory?: { role: string; content: string }[];
   progressLogs?: { date: string; note: string }[];
-  goalCheckins?: Record<string, string[]>; // goal name -> ISO date strings (yyyy-mm-dd)
+  goalCheckins?: Record<string, string[]>;
+  onboardingCompleted?: boolean;
   [k: string]: any;
 };
 
 const KEY = "dermo.profile.v1";
 
-export const saveProfile = (p: UserProfile) => {
-  const existing = loadProfile() || {};
-  const merged = { ...existing, ...p };
-  // Normalize personalInfo
-  if (p.firstName || p.dob || p.gender) {
-    merged.personalInfo = {
-      ...(existing.personalInfo || {}),
-      firstName: p.firstName ?? existing.personalInfo?.firstName,
-      dob: p.dob ?? existing.personalInfo?.dob,
-      gender: p.gender ?? existing.personalInfo?.gender,
-    };
-  }
-  localStorage.setItem(KEY, JSON.stringify(merged));
+// --- Auth binding ---
+let currentUserId: string | null = null;
+export const setAuthUserId = (id: string | null) => {
+  currentUserId = id;
+  if (!id) localStorage.removeItem(KEY);
 };
+export const getAuthUserId = () => currentUserId;
 
+// --- Local cache ---
 export const loadProfile = (): UserProfile | null => {
   try {
     const raw = localStorage.getItem(KEY);
@@ -65,13 +62,78 @@ export const loadProfile = (): UserProfile | null => {
 
 export const clearProfile = () => localStorage.removeItem(KEY);
 
+const writeLocal = (p: UserProfile) => localStorage.setItem(KEY, JSON.stringify(p));
+
+// --- DB sync ---
+export const syncProfileFromDB = async (userId: string): Promise<UserProfile | null> => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("extra, onboarding_completed, first_name, dob, gender, email")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error || !data) return null;
+  const extra = (data.extra as Record<string, any>) || {};
+  const profile: UserProfile = { ...extra };
+  profile.onboardingCompleted = !!data.onboarding_completed;
+  if (data.first_name || data.dob || data.gender) {
+    profile.personalInfo = {
+      firstName: data.first_name ?? profile.personalInfo?.firstName,
+      dob: data.dob ?? profile.personalInfo?.dob,
+      gender: data.gender ?? profile.personalInfo?.gender,
+    };
+  }
+  writeLocal(profile);
+  return profile;
+};
+
+export const pushProfileToDB = async (userId: string) => {
+  const p = loadProfile() || {};
+  await supabase.from("profiles").upsert({
+    id: userId,
+    extra: p as any,
+    first_name: p.personalInfo?.firstName ?? null,
+    dob: p.personalInfo?.dob ?? null,
+    gender: p.personalInfo?.gender ?? null,
+    onboarding_completed: !!p.onboardingCompleted,
+  });
+};
+
+const schedulePush = () => {
+  if (!currentUserId) return;
+  const uid = currentUserId;
+  // fire-and-forget; queued microtask so multiple updates in one tick coalesce
+  queueMicrotask(() => { pushProfileToDB(uid).catch(() => {}); });
+};
+
+// --- Public mutators (kept sync to preserve existing call sites) ---
+export const saveProfile = (p: UserProfile) => {
+  const existing = loadProfile() || {};
+  const merged: UserProfile = { ...existing, ...p };
+  if ((p as any).firstName || (p as any).dob || (p as any).gender) {
+    merged.personalInfo = {
+      ...(existing.personalInfo || {}),
+      firstName: (p as any).firstName ?? existing.personalInfo?.firstName,
+      dob: (p as any).dob ?? existing.personalInfo?.dob,
+      gender: (p as any).gender ?? existing.personalInfo?.gender,
+    };
+  }
+  writeLocal(merged);
+  schedulePush();
+};
+
 export const updateProfile = (patch: Partial<UserProfile>) => {
   const p = loadProfile() || {};
   const next = { ...p, ...patch };
-  localStorage.setItem(KEY, JSON.stringify(next));
+  writeLocal(next);
+  schedulePush();
   return next;
 };
 
+export const markOnboardingComplete = () => {
+  updateProfile({ onboardingCompleted: true });
+};
+
+// --- Helpers (unchanged behavior) ---
 export const allGoals = (p?: UserProfile | null): string[] => {
   if (!p) return [];
   return [
