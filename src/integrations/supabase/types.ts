@@ -14,7 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          allergies: Json | null
+          buy_list: Json | null
+          chat_history: Json | null
+          conditions: Json | null
+          created_at: string
+          dob: string | null
+          email: string | null
+          extra: Json | null
+          first_name: string | null
+          focus: Json | null
+          gender: string | null
+          goal_checkins: Json | null
+          hair_goals: Json | null
+          id: string
+          last_login: string | null
+          life_stage: string | null
+          nail_goals: Json | null
+          onboarding_completed: boolean
+          progress_logs: Json | null
+          routines: Json | null
+          selected_products: Json | null
+          sensitivities: Json | null
+          skin_concerns: Json | null
+          skin_goals: Json | null
+          skin_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          allergies?: Json | null
+          buy_list?: Json | null
+          chat_history?: Json | null
+          conditions?: Json | null
+          created_at?: string
+          dob?: string | null
+          email?: string | null
+          extra?: Json | null
+          first_name?: string | null
+          focus?: Json | null
+          gender?: string | null
+          goal_checkins?: Json | null
+          hair_goals?: Json | null
+          id: string
+          last_login?: string | null
+          life_stage?: string | null
+          nail_goals?: Json | null
+          onboarding_completed?: boolean
+          progress_logs?: Json | null
+          routines?: Json | null
+          selected_products?: Json | null
+          sensitivities?: Json | null
+          skin_concerns?: Json | null
+          skin_goals?: Json | null
+          skin_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          allergies?: Json | null
+          buy_list?: Json | null
+          chat_history?: Json | null
+          conditions?: Json | null
+          created_at?: string
+          dob?: string | null
+          email?: string | null
+          extra?: Json | null
+          first_name?: string | null
+          focus?: Json | null
+          gender?: string | null
+          goal_checkins?: Json | null
+          hair_goals?: Json | null
+          id?: string
+          last_login?: string | null
+          life_stage?: string | null
+          nail_goals?: Json | null
+          onboarding_completed?: boolean
+          progress_logs?: Json | null
+          routines?: Json | null
+          selected_products?: Json | null
+          sensitivities?: Json | null
+          skin_concerns?: Json | null
+          skin_goals?: Json | null
+          skin_type?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
