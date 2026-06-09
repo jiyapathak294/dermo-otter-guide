@@ -1,25 +1,30 @@
-import { useState } from "react";
-import { BrandSplash } from "@/components/BrandSplash";
-import { DermaIntro } from "@/components/DermaIntro";
+import { useEffect, useState } from "react";
 import { Survey } from "@/components/Survey";
 import { AllDone } from "@/components/AllDone";
 import { Home } from "@/pages/Home";
-import { saveProfile, loadProfile } from "@/lib/profile";
+import { saveProfile, markOnboardingComplete, pushProfileToDB } from "@/lib/profile";
+import { useAuth } from "@/lib/auth";
 
-type Stage = "splash" | "derma" | "survey" | "done" | "home";
+type Stage = "survey" | "done" | "home";
 
 const Index = () => {
-  // Always start on the survey page for preview/demo purposes
-  const [stage, setStage] = useState<Stage>("survey");
+  const { user, onboardingCompleted, refreshProfile } = useAuth();
+  const [stage, setStage] = useState<Stage>(onboardingCompleted ? "home" : "survey");
+
+  useEffect(() => {
+    // When auth/profile resolves, jump straight to home for returning users
+    if (onboardingCompleted) setStage("home");
+  }, [onboardingCompleted]);
 
   return (
     <main>
-      {stage === "splash" && <BrandSplash onNext={() => setStage("derma")} />}
-      {stage === "derma" && <DermaIntro onNext={() => setStage("survey")} />}
       {stage === "survey" && (
         <Survey
-          onComplete={(a) => {
+          onComplete={async (a) => {
             saveProfile(a);
+            markOnboardingComplete();
+            if (user) await pushProfileToDB(user.id);
+            await refreshProfile();
             setStage("done");
           }}
         />
