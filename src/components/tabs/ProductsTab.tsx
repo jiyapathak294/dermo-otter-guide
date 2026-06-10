@@ -177,8 +177,35 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [assignTarget, setAssignTarget] = useState<Product | null>(null);
+  const [recommended, setRecommended] = useState<Product[]>(() => {
+    try {
+      const cached = localStorage.getItem("dermo.recommended.v1");
+      if (cached) return JSON.parse(cached);
+    } catch {}
+    return RECOMMENDED;
+  });
 
   useEffect(() => { if (initialQuery) search(initialQuery); }, [initialQuery]);
+
+  // Populate recommended with real product images via SerpAPI if we haven't cached yet
+  useEffect(() => {
+    if (initialQuery) return;
+    if (localStorage.getItem("dermo.recommended.v1")) return;
+    (async () => {
+      try {
+        const profile = loadProfile();
+        const focus = profile?.focus?.[0] || "Skin";
+        const query = focus === "Hair" ? "haircare essentials"
+          : focus === "Nails" ? "nailcare essentials"
+          : "everyday skincare essentials";
+        const { data } = await supabase.functions.invoke("product-search", { body: { query, profile } });
+        if (Array.isArray(data?.results) && data.results.length) {
+          localStorage.setItem("dermo.recommended.v1", JSON.stringify(data.results));
+          setRecommended(data.results);
+        }
+      } catch {}
+    })();
+  }, [initialQuery]);
 
   const search = async (query?: string) => {
     const text = (query ?? q).trim();
