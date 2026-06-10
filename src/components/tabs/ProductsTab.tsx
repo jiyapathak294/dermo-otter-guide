@@ -24,6 +24,31 @@ const productKey = (p: Product) => `${p.brand}-${p.name}`.toLowerCase().replace(
 const slotKey = (focus: string, time: string, stepName: string) =>
   `${focus.toLowerCase()}:${time}:${stepName}`.replace(/\s+/g, "-").toLowerCase();
 
+// Product image with graceful fallback to a branded tile if the URL fails
+const ProductImage = ({ product }: { product: Product }) => {
+  const [failed, setFailed] = useState(false);
+  const showImg = !!product.image && !failed;
+  return (
+    <div className="aspect-square rounded-[22px] overflow-hidden bg-spa-mist relative">
+      {showImg ? (
+        <img
+          src={product.image}
+          alt={product.name}
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          className="w-full h-full object-cover"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <div className="w-full h-full bg-gradient-to-br from-baby-blue/40 to-spa-mist flex flex-col items-center justify-center text-foreground/60 px-2 text-center gap-1">
+          <span className="text-[15px] font-heading uppercase tracking-wide">{product.brand}</span>
+          <span className="text-[9px] text-foreground/40 leading-tight line-clamp-2">{product.name}</span>
+        </div>
+      )}
+    </div>
+  );
+};
+
 type Slot = { focus: "Skin" | "Hair" | "Nails"; time: string; stepName: string; key: string };
 
 // ---- Assign product to routine dialog ----
@@ -274,21 +299,14 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
           {error && <div className="mt-3 rounded-2xl bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
 
           {(() => {
-            const display = searched ? results : RECOMMENDED;
+            const display = searched ? results : recommended;
             return (
               <>
                 <div className="grid grid-cols-2 gap-4 mt-4">
                   {display.map((p, i) => (
                     <div key={i} className="flex flex-col animate-step-in" style={{ animationDelay: `${i * 80}ms` }}>
-                      <div className="aspect-square rounded-[22px] overflow-hidden bg-spa-mist relative">
-                        {p.image ? (
-                          <img src={p.image} alt={p.name} loading="lazy" className="w-full h-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-baby-blue/40 to-spa-mist flex items-center justify-center text-foreground/40 text-[10px] font-bold uppercase tracking-wider px-2 text-center">
-                            {p.brand}
-                          </div>
-                        )}
-                      </div>
+                      <ProductImage product={p} />
+
                       <p className="mt-2 text-[11px] font-bold tracking-wide text-foreground uppercase">{p.brand}</p>
                       <p className="text-sm text-foreground leading-tight">{p.name}</p>
                       <div className="flex items-center gap-1 mt-1">
