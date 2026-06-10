@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, ArrowLeft, Check } from "lucide-react";
 import { questions, Question } from "@/data/surveyQuestions";
 import { OptionIcon } from "@/components/OptionIcon";
+import otter from "@/assets/dermo-otter.png";
 
 const NO_ICON_QUESTIONS = new Set(["skinTried", "nailConcerns"]);
 
@@ -71,17 +72,24 @@ export const Survey = ({ onComplete }: { onComplete: (answers: Record<string, an
         </div>
       </div>
 
-      {/* Question */}
-      <div className="px-8 pt-10 text-center">
-        <h2
-          key={current.id}
-          className="font-heading text-[28px] leading-[1.15] text-foreground animate-fade-in"
-        >
-          {current.question}
-        </h2>
-        {current.type === "multi" && (
-          <p className="mt-3 text-base text-muted-foreground">Select all that apply</p>
-        )}
+      {/* Question with Dermo otter peeking in */}
+      <div className="px-8 pt-8 flex items-start gap-3">
+        <img
+          src={otter}
+          alt="Dermo the Otter"
+          className="w-20 h-20 object-contain shrink-0 animate-otter-bob"
+        />
+        <div className="flex-1 text-center">
+          <h2
+            key={current.id}
+            className="font-heading text-[24px] leading-[1.15] text-foreground animate-fade-in"
+          >
+            {current.question}
+          </h2>
+          {current.type === "multi" && (
+            <p className="mt-2 text-sm text-muted-foreground">Select all that apply</p>
+          )}
+        </div>
       </div>
 
       {/* Options */}
