@@ -9,6 +9,8 @@ import { useAuth } from "@/lib/auth";
 import { lovable } from "@/integrations/lovable";
 import { DermoLogo } from "@/components/DermoLogo";
 import { toast } from "sonner";
+import googleAsset from "@/assets/google.avif.asset.json";
+import appleAsset from "@/assets/apple.svg.asset.json";
 
 type Mode = "signin" | "signup";
 
@@ -168,10 +170,12 @@ const Auth = () => {
           </div>
 
           <div className="space-y-2">
-            <Button type="button" variant="outline" className="w-full" onClick={() => oauth("google")} disabled={busy}>
+            <Button type="button" variant="outline" className="w-full gap-2" onClick={() => oauth("google")} disabled={busy}>
+              <img src={googleAsset.url} alt="" className="w-4 h-4" />
               Continue with Google
             </Button>
-            <Button type="button" variant="outline" className="w-full" onClick={() => oauth("apple")} disabled={busy}>
+            <Button type="button" variant="outline" className="w-full gap-2 bg-black text-white border-black hover:bg-black/90 hover:text-white" onClick={() => oauth("apple")} disabled={busy}>
+              <img src={appleAsset.url} alt="" className="w-4 h-4 invert" />
               Continue with Apple
             </Button>
           </div>
