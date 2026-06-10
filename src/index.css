@@ -104,11 +104,20 @@
   0%   { opacity: 0; transform: translateY(12px); }
   100% { opacity: 1; transform: translateY(0); }
 }
+/* Playful roaming scanner frame */
+@keyframes scan-roam {
+  0%   { transform: translate(-32%, -34%) scale(0.92) rotate(-2deg); }
+  20%  { transform: translate(28%, -38%) scale(1.02) rotate(3deg); }
+  40%  { transform: translate(34%, 18%)  scale(0.96) rotate(-1deg); }
+  60%  { transform: translate(-30%, 32%) scale(1.04) rotate(2deg); }
+  80%  { transform: translate(-36%, -8%) scale(0.98) rotate(-3deg); }
+  100% { transform: translate(-32%, -34%) scale(0.92) rotate(-2deg); }
+}
+.animate-scan-roam { animation: scan-roam 6s ease-in-out infinite; }
+.animate-scan-snap { transition: transform 0.45s cubic-bezier(0.4, 1.4, 0.5, 1); transform: translate(0, 0) scale(1) rotate(0deg); }
 .step-shimmer {
   background: linear-gradient(90deg, hsl(var(--spa-mist)) 0%, hsl(var(--baby-blue) / 0.4) 50%, hsl(var(--spa-mist)) 100%);
   background-size: 800px 100%;
   animation: shimmer 1.4s infinite linear;
 }
-.animate-step-in {
-  animation: stepFadeIn 0.45s ease-out both;
-}
+.animate-step-in { animation: stepFadeIn 0.45s ease-out both; }
