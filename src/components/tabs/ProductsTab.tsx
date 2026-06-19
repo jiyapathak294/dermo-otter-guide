@@ -417,8 +417,9 @@ export const ProductsTab = ({ initialQuery }: { initialQuery?: string }) => {
           </div>
 
           <div className="flex gap-2 mt-3 flex-wrap">
-            <Dropdown label="Filter" value={filter} options={FILTER_OPTIONS} onSelect={setFilter} Icon={SlidersHorizontal} />
-            <Dropdown label="Sort by" value={sort} options={SORT_OPTIONS} onSelect={setSort} Icon={ArrowDownNarrowWide} />
+            <Dropdown<FilterOpt> label="Filter" value={filter} options={FILTER_OPTIONS} onSelect={setFilter} Icon={SlidersHorizontal} />
+            <Dropdown<SortOpt> label="Sort by" value={sort} options={SORT_OPTIONS} onSelect={setSort} Icon={ArrowDownNarrowWide} />
+
           </div>
 
           {confirmation && (
