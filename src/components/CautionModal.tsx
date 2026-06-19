@@ -44,6 +44,14 @@ export const CautionModal = ({ profile, onClose }: { profile: UserProfile | null
           <p className="text-sm">Dermo AI provides educational, AI-generated guidance. It does <b>not diagnose conditions</b> or replace care from a board-certified dermatologist. For persistent or severe symptoms, consult a professional.</p>
         </Section>
 
+        <Section icon={AlertTriangle} title="Eczema-prone skin">
+          <ul className="list-disc pl-5 text-sm space-y-1.5">
+            <li>Always apply prescribed medication for eczema as directed by a healthcare professional.</li>
+            <li>Perform a patch test for any new product, especially with eczema-prone skin.</li>
+            <li>Monitor skin for signs of irritation or worsening of eczema and consult a dermatologist if needed.</li>
+          </ul>
+        </Section>
+
         <button onClick={onClose} className="w-full mt-4 rounded-full bg-baby-blue py-3 font-heading text-white shadow-soft active:scale-95">
           Got it
         </button>
