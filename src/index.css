@@ -56,8 +56,11 @@
   html, body, #root { height: 100%; }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Nunito', system-ui, sans-serif;
-    font-weight: 500;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', system-ui, sans-serif;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.005em;
   }
   /* Global button hover transition (color/filter shift on hover) */
   button { transition: filter 180ms ease, background-color 180ms ease, color 180ms ease, transform 120ms ease, box-shadow 180ms ease; }
