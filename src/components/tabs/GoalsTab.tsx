@@ -13,9 +13,12 @@ const NAIL = ["Strengthen nails", "Reduce peeling", "Improve growth", "Reduce di
 const NAVY = "#1d2b5f";
 const NAVY_LIGHT = "#3b54a5";
 
-const Group = ({ Icon, title, all, selected, onToggle }: any) => (
+const Group = ({ Icon, title, all, selected, onToggle, hideIcon }: any) => (
   <div className="space-y-2">
-    <div className="flex items-center gap-2"><Icon className="h-4 w-4" style={{ color: NAVY }} /><p className="font-heading text-sm" style={{ color: NAVY }}>{title}</p></div>
+    <div className="flex items-center gap-2">
+      {!hideIcon && Icon && <Icon className="h-4 w-4" style={{ color: NAVY }} />}
+      <p className="font-heading text-sm" style={{ color: NAVY }}>{title}</p>
+    </div>
     <div className="flex flex-wrap gap-2">
       {selected.map((g: string) => (
         <button key={g} onClick={() => onToggle(g)} className="text-xs font-bold px-3 py-1.5 rounded-full text-white flex items-center gap-1 active:scale-95" style={{ background: NAVY }}>
