@@ -93,7 +93,12 @@ export const ScanTab = () => {
     }
   };
 
-  useEffect(() => () => stopCam(), []);
+  // Auto-start camera on mount; cleanup on unmount
+  useEffect(() => {
+    startCam();
+    return () => stopCam();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const grabFrame = (): string | null => {
     const v = videoRef.current; if (!v || !v.videoWidth) return null;
