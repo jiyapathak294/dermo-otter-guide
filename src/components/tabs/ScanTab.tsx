@@ -215,23 +215,15 @@ export const ScanTab = () => {
           <video ref={videoRef} playsInline muted autoPlay className="w-full h-full object-cover" />
         )}
         {camState !== "live" && (
-          <div className="absolute inset-0 bg-gradient-to-br from-spa-mist to-baby-blue/40 flex flex-col items-center justify-center gap-4 px-6 text-center">
-            <Camera className="h-12 w-12 text-foreground/60" />
-            <p className="text-sm text-foreground/80 max-w-[240px] leading-snug">
-              Point the lens at a skincare, hair, or nail product. Dermo will lock on automatically.
-            </p>
-            {camState === "denied" && <p className="text-[11px] text-destructive">Camera permission denied. Enable it in browser settings.</p>}
-            {camState === "unavailable" && <p className="text-[11px] text-muted-foreground">Camera unavailable. Use the library instead.</p>}
-            {camState === "requesting" && <Loader2 className="h-6 w-6 animate-spin text-foreground/60" />}
-            {(camState === "idle" || camState === "denied" || camState === "unavailable") && (
-              <div className="flex flex-col items-center gap-2 w-full max-w-[220px] mt-2">
-                <button onClick={startCam} className="w-full rounded-full bg-foreground text-white px-4 py-3 text-sm font-bold inline-flex items-center justify-center gap-2 hover:bg-foreground/85">
-                  <Camera className="h-4 w-4" /> Enable camera
-                </button>
-                <button onClick={() => fileRef.current?.click()} className="w-full rounded-full bg-white/90 text-foreground px-4 py-3 text-sm font-bold inline-flex items-center justify-center gap-2 border border-foreground/10 hover:bg-white">
-                  <ImageIcon className="h-4 w-4" /> Use library photo
-                </button>
-              </div>
+          <div className="absolute inset-0 bg-black flex flex-col items-center justify-center gap-4 px-6 text-center text-white">
+            {camState === "requesting" && <Loader2 className="h-7 w-7 animate-spin text-white/80" />}
+            {camState === "requesting" && <p className="text-sm text-white/80">Starting camera…</p>}
+            {camState === "denied" && <p className="text-xs text-white/80 max-w-[240px]">Camera permission denied. Enable it in your browser settings.</p>}
+            {camState === "unavailable" && <p className="text-xs text-white/80 max-w-[240px]">Camera unavailable on this device.</p>}
+            {(camState === "denied" || camState === "unavailable") && (
+              <button onClick={() => fileRef.current?.click()} className="rounded-full bg-white text-foreground px-5 py-3 text-sm font-bold inline-flex items-center justify-center gap-2">
+                <ImageIcon className="h-4 w-4" /> Use library photo
+              </button>
             )}
           </div>
         )}
