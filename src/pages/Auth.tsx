@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
 import { lovable } from "@/integrations/lovable";
 import { DermoLogo } from "@/components/DermoLogo";
-import { toast } from "sonner";
 import googleAsset from "@/assets/google.avif.asset.json";
 import appleAsset from "@/assets/apple.svg.asset.json";
 
@@ -51,14 +50,9 @@ const Auth = () => {
     setBusy(true);
     try {
       if (mode === "signup") {
-        const { error, needsConfirmation } = await signUp(email, password, firstName.trim());
+        const { error } = await signUp(email, password, firstName.trim());
         if (error) { setError(error); return; }
-        if (needsConfirmation) {
-          toast.success("Check your email to confirm your account.");
-          setMode("signin");
-        } else {
-          navigate("/", { replace: true });
-        }
+        navigate("/", { replace: true });
       } else {
         const { error } = await signIn(email, password);
         if (error) { setError(error); return; }

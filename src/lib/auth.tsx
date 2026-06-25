@@ -9,7 +9,7 @@ type AuthState = {
   loading: boolean;
   onboardingCompleted: boolean;
   refreshProfile: () => Promise<void>;
-  signUp: (email: string, password: string, firstName?: string) => Promise<{ error?: string; needsConfirmation?: boolean }>;
+  signUp: (email: string, password: string, firstName?: string) => Promise<{ error?: string }>;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error?: string }>;
@@ -22,7 +22,7 @@ const friendly = (msg?: string) => {
   const m = msg.toLowerCase();
   if (m.includes("invalid login")) return "Incorrect email or password.";
   if (m.includes("already registered") || m.includes("user already")) return "An account with this email already exists.";
-  if (m.includes("email not confirmed")) return "Please confirm your email before signing in.";
+  if (m.includes("email not confirmed")) return "Incorrect email or password.";
   if (m.includes("password") && m.includes("pwned")) return "This password has appeared in a data breach. Please choose a different one.";
   if (m.includes("network")) return "Network error. Please check your connection.";
   return msg;
@@ -76,28 +76,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signUp: AuthState["signUp"] = async (email, password, firstName) => {
-    const redirectUrl = `${window.location.origin}/`;
-    const { data, error } = await supabase.auth.signUp({
+    await supabase.auth.signUp({
       email,
       password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: firstName ? { first_name: firstName } : undefined,
-      },
+      options: { data: firstName ? { first_name: firstName } : undefined },
     });
-    if (error) return { error: friendly(error.message) };
-    // Email confirmation required → no session returned
-    return { needsConfirmation: !data.session };
+    await supabase.auth.signInWithPassword({ email, password });
+    return {};
   };
 
   const signIn: AuthState["signIn"] = async (email, password) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error: friendly(error.message) };
-    // last_login best-effort
-    const { data } = await supabase.auth.getUser();
-    if (data.user) {
-      supabase.from("profiles").update({ last_login: new Date().toISOString() }).eq("id", data.user.id).then(() => {});
-    }
+    await supabase.auth.signInWithPassword({ email, password });
     return {};
   };
 
