@@ -7,9 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
 import { lovable } from "@/integrations/lovable";
+import { supabase } from "@/integrations/supabase/client";
 import { DermoLogo } from "@/components/DermoLogo";
 import googleAsset from "@/assets/google.avif.asset.json";
-import appleAsset from "@/assets/apple.svg.asset.json";
 
 type Mode = "signin" | "signup";
 
@@ -63,7 +63,7 @@ const Auth = () => {
     }
   };
 
-  const oauth = async (provider: "google" | "apple") => {
+  const oauth = async (provider: "google" | "microsoft") => {
     setBusy(true);
     setError(null);
     const result = await lovable.auth.signInWithOAuth(provider, {
@@ -76,6 +76,19 @@ const Auth = () => {
     }
     if (result.redirected) return;
     navigate("/", { replace: true });
+  };
+
+  const oauthFacebook = async () => {
+    setBusy(true);
+    setError(null);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "facebook",
+      options: { redirectTo: window.location.origin },
+    });
+    if (error) {
+      setError(error.message || "Could not sign in with Facebook.");
+      setBusy(false);
+    }
   };
 
   return (
@@ -168,9 +181,13 @@ const Auth = () => {
               <img src={googleAsset.url} alt="" className="w-4 h-4" />
               Continue with Google
             </Button>
-            <Button type="button" variant="outline" className="w-full gap-2 bg-black text-white border-black hover:bg-black/90 hover:text-white" onClick={() => oauth("apple")} disabled={busy}>
-              <img src={appleAsset.url} alt="" className="w-4 h-4 invert" />
-              Continue with Apple
+            <Button type="button" variant="outline" className="w-full gap-2 bg-[#1877F2] text-white border-[#1877F2] hover:bg-[#1877F2]/90 hover:text-white" onClick={oauthFacebook} disabled={busy}>
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              Continue with Facebook
+            </Button>
+            <Button type="button" variant="outline" className="w-full gap-2" onClick={() => oauth("microsoft")} disabled={busy}>
+              <svg className="w-4 h-4" viewBox="0 0 24 24"><path fill="#f25022" d="M0 0h11v11H0z"/><path fill="#00a4ef" d="M0 13h11v11H0z"/><path fill="#7fba00" d="M13 0h11v11H13z"/><path fill="#ffb900" d="M13 13h11v11H13z"/></svg>
+              Continue with Microsoft
             </Button>
           </div>
         </div>
