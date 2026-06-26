@@ -76,12 +76,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signUp: AuthState["signUp"] = async (email, password, firstName) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: firstName ? { first_name: firstName } : undefined },
     });
     if (error) return { error: friendly(error.message) };
+    // If signUp returned a session we're already logged in
+    if (data.session) return {};
+    // No session = email confirmation still required; try signing in anyway
+    const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInErr) {
+      return { error: "Account created — but email confirmation is still ON in Supabase. Go to Supabase → Authentication → Providers → Email → disable 'Confirm email'." };
+    }
     return {};
   };
 
