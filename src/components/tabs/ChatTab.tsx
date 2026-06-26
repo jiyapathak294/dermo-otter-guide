@@ -78,11 +78,11 @@ export const ChatTab = () => {
       </div>
 
       <div
-        className="flex-1 flex flex-col px-4 pt-5 pb-5 rounded-t-[28px]"
+        className="flex-1 min-h-0 flex flex-col px-4 pt-5 pb-5 rounded-t-[28px]"
         style={{ background: `linear-gradient(180deg, ${CLAY_LIGHT} 0%, ${CLAY} 100%)` }}
       >
-        <div className="flex-1 rounded-[26px] bg-white p-4 flex flex-col shadow-soft overflow-hidden">
-          <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-3 pr-1">
+        <div className="flex-1 min-h-0 rounded-[26px] bg-white p-4 flex flex-col shadow-soft overflow-hidden">
+          <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"} animate-fade-in`}>
                 <div
@@ -96,6 +96,9 @@ export const ChatTab = () => {
                   {m.content ? (
                     <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                      {loading && i === messages.length - 1 && m.role === "assistant" && (
+                        <span className="inline-block w-[2px] h-[1em] bg-foreground/70 ml-0.5 align-middle animate-pulse rounded-full" />
+                      )}
                     </div>
                   ) : (loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null)}
                 </div>

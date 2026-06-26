@@ -6,11 +6,11 @@ const GREEN = "#3a8a5e";
 const GREEN_LIGHT = "#5fa97c";
 
 const VIDEOS = [
-  { title: "How to build a skincare routine", id: "r0wIWBSfgXM", source: "Dr Dray" },
-  { title: "How to treat acne safely", id: "WUEDDJfTHA8", source: "Dr Sam Bunting" },
-  { title: "Hair care basics", id: "DnoS4-AT_w0", source: "Dr Dray" },
-  { title: "Nail health guide", id: "Ux3pxMIvnHU", source: "Dermatology Education" },
-  { title: "Ingredient breakdowns", id: "5d9Mn-AnNlI", source: "Lab Muffin Beauty Science" },
+  { title: "How to build a skincare routine", id: "8eRSwMVhUNM", source: "Dr Dray" },
+  { title: "How to treat acne safely", id: "5YsUSvAIsEQ", source: "Dr Sam Bunting" },
+  { title: "Hair care basics", id: "kT3JMo3BTmA", source: "Dr Dray" },
+  { title: "Nail health guide", id: "khCcYSErKfs", source: "Dermatology Education" },
+  { title: "Ingredient breakdowns", id: "sShqBTZEEXw", source: "Lab Muffin Beauty Science" },
 ];
 
 const INGREDIENTS = [
@@ -75,9 +75,9 @@ export const LearnTab = () => {
                 <div className="w-[55%] aspect-video bg-black m-3 rounded-2xl overflow-hidden">
                   <iframe
                     className="w-full h-full"
-                    src={`https://www.youtube.com/embed/${v.id}`}
+                    src={`https://www.youtube.com/embed/${v.id}?rel=0&playsinline=1`}
                     title={v.title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
                   />
                 </div>
