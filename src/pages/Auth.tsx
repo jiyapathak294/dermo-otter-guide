@@ -30,6 +30,7 @@ const Auth = () => {
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
@@ -52,7 +53,7 @@ const Auth = () => {
       if (mode === "signup") {
         const { error } = await signUp(email, password, firstName.trim());
         if (error) { setError(error); return; }
-        navigate("/", { replace: true });
+        setEmailSent(true);
       } else {
         const { error } = await signIn(email, password);
         if (error) { setError(error); return; }
@@ -90,6 +91,27 @@ const Auth = () => {
       setBusy(false);
     }
   };
+
+  if (emailSent) {
+    return (
+      <main className="app-frame min-h-screen flex flex-col items-center justify-center px-6 py-10 bg-gradient-to-b from-background to-[hsl(var(--lavender)/0.15)]">
+        <div className="w-full max-w-sm text-center">
+          <DermoLogo color="#8d77ab" size={72} />
+          <h1 className="font-heading text-2xl mt-6 text-foreground">Check your email</h1>
+          <p className="text-sm text-muted-foreground mt-2">
+            We sent a confirmation link to <span className="font-medium text-foreground">{email}</span>. Click the link to activate your account and get started.
+          </p>
+          <button
+            type="button"
+            onClick={() => { setEmailSent(false); setMode("signin"); }}
+            className="mt-6 text-sm text-[hsl(var(--lavender))] hover:underline"
+          >
+            Back to sign in
+          </button>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="app-frame min-h-screen flex flex-col items-center justify-center px-6 py-10 bg-gradient-to-b from-background to-[hsl(var(--lavender)/0.15)]">
