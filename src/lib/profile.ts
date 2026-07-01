@@ -202,3 +202,56 @@ export const goalPercent = (goal: string, p?: UserProfile | null, days = 7): num
 
 export const checkedToday = (goal: string, p?: UserProfile | null): boolean =>
   ((p?.goalCheckins?.[goal]) || []).includes(todayISO());
+
+export const removeGoal = (goal: string) => {
+  const p = loadProfile() || {};
+  const filt = (arr?: string[]) => (arr || []).filter((g) => g !== goal);
+  return updateProfile({
+    skinGoals: filt(p.skinGoals),
+    hairGoals: filt(p.hairGoals),
+    nailGoals: filt(p.nailGoals),
+  });
+};
+
+// ---- Weekly login streak ("weeks in a row you opened Dermo") ----
+// Stored as ISO year-week strings, e.g. "2026-W27".
+const isoWeek = (d: Date): string => {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((t.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return `${t.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
+};
+
+export const recordWeeklyVisit = () => {
+  const p = loadProfile() || {};
+  const weeks = new Set<string>((p as any).weeklyVisits || []);
+  weeks.add(isoWeek(new Date()));
+  return updateProfile({ weeklyVisits: Array.from(weeks).sort() } as any);
+};
+
+export const weeklyStreak = (p?: UserProfile | null): number => {
+  const weeks = new Set<string>(((p as any)?.weeklyVisits) || []);
+  if (weeks.size === 0) return 0;
+  let streak = 0;
+  const d = new Date();
+  while (weeks.has(isoWeek(d))) {
+    streak++;
+    d.setDate(d.getDate() - 7);
+  }
+  return streak;
+};
+
+export const lastWeeksVisited = (n = 8, p?: UserProfile | null): { key: string; visited: boolean }[] => {
+  const weeks = new Set<string>(((p as any)?.weeklyVisits) || []);
+  const out: { key: string; visited: boolean }[] = [];
+  const d = new Date();
+  for (let i = 0; i < n; i++) {
+    const k = isoWeek(d);
+    out.unshift({ key: k, visited: weeks.has(k) });
+    d.setDate(d.getDate() - 7);
+  }
+  return out;
+};
+
