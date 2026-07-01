@@ -11,3 +11,10 @@ verify_jwt = false
 
 [functions.product-search]
 verify_jwt = false
+
+[functions.product-detect]
+verify_jwt = false
+
+[functions.check-email-exists]
+verify_jwt = false
+
