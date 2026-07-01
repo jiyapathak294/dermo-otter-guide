@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { loadProfile } from "@/lib/profile";
 import { Sparkles, FlaskConical, Leaf, CheckCircle2 } from "lucide-react";
-import otter from "@/assets/dermo-otter.png";
 
 const steps = [
   { Icon: Sparkles, label: "Reading your survey" },
