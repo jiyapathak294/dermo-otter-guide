@@ -73,17 +73,23 @@ export const Analyzing = ({ onDone }: { onDone: () => void }) => {
         </p>
       </div>
 
-      {/* Halo with otter */}
+      {/* Halo */}
       <div className="relative mt-10">
         <div className="absolute inset-0 rounded-full bg-[hsl(var(--lavender)/0.4)] blur-2xl scale-110" />
-        <div className="relative h-44 w-44 rounded-full bg-white shadow-soft flex items-center justify-center overflow-hidden">
+        <div className="relative h-40 w-40 rounded-full bg-white shadow-soft flex items-center justify-center overflow-hidden">
           <div
             className="absolute inset-0 rounded-full border-4 border-transparent animate-spin"
             style={{ borderTopColor: "hsl(var(--lavender-deep))", animationDuration: "1.6s" }}
           />
-          <img src={otter} alt="" className="h-32 w-32 object-contain animate-otter-bob" />
+          <div className="text-[hsl(var(--lavender-deep))]">
+            <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2 L4 6 v6 c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10 V6 z"/>
+              <path d="M9 12l2 2 4-4"/>
+            </svg>
+          </div>
         </div>
       </div>
+
 
       {/* Progress bar */}
       <div className="w-full max-w-[280px] mt-10">
