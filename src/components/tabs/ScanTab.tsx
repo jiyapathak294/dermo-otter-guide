@@ -204,10 +204,10 @@ export const ScanTab = () => {
   const ScanView = (
     <div className="absolute inset-0 flex flex-col bg-white">
       {/* Header */}
-      <div className="px-5 pt-5 pb-3 flex items-center gap-3 bg-white flex-none">
-        <DermoLogo color={DARK} size={38} />
+      <div className="px-5 pt-5 pb-3 flex items-center bg-white flex-none">
         <h1 className="font-heading text-[28px] text-foreground">Scan</h1>
       </div>
+
 
       {/* Camera viewport — fills available space */}
       <div className="relative flex-1 bg-black overflow-hidden">

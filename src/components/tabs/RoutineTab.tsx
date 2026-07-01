@@ -437,32 +437,41 @@ export const RoutineTab = ({ onFindProducts }: { onFindProducts?: (q: string) =>
         {!loading && steps.map((s, i) => {
           const key = slotKey(activeFocus, activeTime, s.step);
           const isDragging = dragIndex === i;
-          const isHover = dragIndex !== null && hoverIndex === i && dragIndex !== i;
+          const showPlaceholderBefore = dragIndex !== null && hoverIndex === i && dragIndex > i;
+          const showPlaceholderAfter  = dragIndex !== null && hoverIndex === i && dragIndex < i;
           return (
-            <div
-              key={`${key}-${i}`}
-              data-step-idx={i}
-              style={{
-                opacity: isDragging ? 0.5 : 1,
-                transform: isHover ? `translateY(${dragIndex! < i ? -6 : 6}px)` : "none",
-                transition: "transform 150ms ease, opacity 120ms ease",
-              }}
-              onPointerUp={onPointerUpCancelLong}
-              onPointerLeave={onPointerUpCancelLong}
-            >
-              <StepCard
-                s={s}
-                n={i + 1}
-                index={i}
-                chosen={selectedProducts[key]}
-                onFind={(q) => onFindProducts?.(q)}
-                isReorder={true}
-                onRename={(name) => renameStep(i, name)}
-                dragHandlers={{ onPointerDown: onPointerDown(i) }}
-              />
+            <div key={`${key}-${i}`}>
+              {showPlaceholderBefore && (
+                <div className="rounded-3xl border-2 border-dashed border-white/90 bg-white/25 h-24 mb-3 animate-fade-in" />
+              )}
+              <div
+                data-step-idx={i}
+                style={{
+                  opacity: isDragging ? 0.25 : 1,
+                  transform: isDragging ? "scale(0.98)" : "none",
+                  transition: "opacity 120ms ease, transform 120ms ease",
+                }}
+                onPointerUp={onPointerUpCancelLong}
+                onPointerLeave={onPointerUpCancelLong}
+              >
+                <StepCard
+                  s={s}
+                  n={i + 1}
+                  index={i}
+                  chosen={selectedProducts[key]}
+                  onFind={(q) => onFindProducts?.(q)}
+                  isReorder={true}
+                  onRename={(name) => renameStep(i, name)}
+                  dragHandlers={{ onPointerDown: onPointerDown(i) }}
+                />
+              </div>
+              {showPlaceholderAfter && (
+                <div className="rounded-3xl border-2 border-dashed border-white/90 bg-white/25 h-24 mt-3 animate-fade-in" />
+              )}
             </div>
           );
         })}
+
 
         <p className="text-[11px] text-center text-foreground/70 pt-2">
           Hold a step to drag and reorder. Dermo AI does not replace professional medical care.

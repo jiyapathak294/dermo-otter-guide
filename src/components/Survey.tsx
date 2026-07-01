@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, ArrowLeft, Check } from "lucide-react";
 import { questions, Question } from "@/data/surveyQuestions";
 import { OptionIcon } from "@/components/OptionIcon";
-import otter from "@/assets/dermo-otter.png";
 
 const NO_ICON_QUESTIONS = new Set(["skinTried", "nailConcerns"]);
+
+// "None"-style options that are mutually exclusive with every other option
+const NONE_VALUES = new Set(["None", "Neither", "No preference", "Prefer not to say", "Unsure", "Unknown"]);
 
 export const Survey = ({ onComplete }: { onComplete: (answers: Record<string, any>) => void }) => {
   const [answers, setAnswers] = useState<Record<string, any>>({});
@@ -43,57 +45,79 @@ export const Survey = ({ onComplete }: { onComplete: (answers: Record<string, an
   })();
 
   const setValue = (v: any) => setAnswers((a) => ({ ...a, [current.id]: v }));
+
   const toggleMulti = (v: string) => {
-    const arr = Array.isArray(value) ? [...value] : [];
-    const i = arr.indexOf(v);
-    if (i >= 0) arr.splice(i, 1); else arr.push(v);
-    setValue(arr);
+    const cur = Array.isArray(value) ? [...value] : [];
+    // Picking a "None" option clears everything else and selects only it (unless toggling off)
+    if (NONE_VALUES.has(v)) {
+      if (cur.includes(v)) return setValue([]);
+      return setValue([v]);
+    }
+    // Picking anything else clears any "None" that was selected
+    const withoutNone = cur.filter((x) => !NONE_VALUES.has(x));
+    const i = withoutNone.indexOf(v);
+    if (i >= 0) withoutNone.splice(i, 1); else withoutNone.push(v);
+    setValue(withoutNone);
   };
 
-  const next = () => {
-    if (idx + 1 >= visible.length) onComplete(answers);
+  const goForward = (nextAnswers: Record<string, any>) => {
+    const nextVisible = questions.filter((q) => !q.showIf || q.showIf(nextAnswers));
+    if (idx + 1 >= nextVisible.length) onComplete(nextAnswers);
     else setIdx(idx + 1);
+  };
+
+  const next = () => goForward(answers);
+  const skip = () => {
+    // remove any partial answer for this question, then advance
+    const cleaned = { ...answers };
+    delete cleaned[current.id];
+    setAnswers(cleaned);
+    goForward(cleaned);
   };
   const back = () => setIdx(Math.max(0, idx - 1));
 
+  const pickSingle = (v: string) => {
+    const nextAnswers = { ...answers, [current.id]: v };
+    setAnswers(nextAnswers);
+    // Auto-advance after single-select
+    setTimeout(() => goForward(nextAnswers), 180);
+  };
+
   const showIcons = !NO_ICON_QUESTIONS.has(current.id);
+  const showSkip = !current.required;
 
   const PURPLE = "#8d77ab";
 
   return (
     <div className="app-frame flex flex-col bg-white">
-      {/* Progress — baby-blue filled on grey track */}
-      <div className="px-6 pt-12">
-        <div className="h-3 w-full rounded-full bg-muted overflow-hidden">
+      {/* Progress */}
+      <div className="px-6 pt-12 flex items-center gap-3">
+        <div className="h-2 flex-1 rounded-full bg-muted overflow-hidden">
           <div
-            className="h-full rounded-full bg-baby-blue transition-all duration-500"
-            style={{ width: `${progress}%` }}
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${progress}%`, background: "hsl(var(--jazz-blue))" }}
           />
         </div>
+        <span className="text-[11px] font-semibold text-muted-foreground tabular-nums">
+          {idx + 1}/{visible.length}
+        </span>
       </div>
 
-      {/* Question with Dermo otter peeking in */}
-      <div className="px-8 pt-8 flex items-start gap-3">
-        <img
-          src={otter}
-          alt="Dermo the Otter"
-          className="w-20 h-20 object-contain shrink-0 animate-otter-bob"
-        />
-        <div className="flex-1 text-center">
-          <h2
-            key={current.id}
-            className="font-heading text-[24px] leading-[1.15] text-foreground animate-fade-in"
-          >
-            {current.question}
-          </h2>
-          {current.type === "multi" && (
-            <p className="mt-2 text-sm text-muted-foreground">Select all that apply</p>
-          )}
-        </div>
+      {/* Question — clean, medical */}
+      <div className="px-8 pt-10">
+        <h2
+          key={current.id}
+          className="font-heading text-[26px] leading-[1.2] text-foreground text-center animate-fade-in"
+        >
+          {current.question}
+        </h2>
+        {current.type === "multi" && (
+          <p className="mt-2 text-xs text-muted-foreground text-center">Select all that apply</p>
+        )}
       </div>
 
       {/* Options */}
-      <div className="flex-1 px-6 pt-8 pb-28 overflow-y-auto">
+      <div className="flex-1 px-6 pt-8 pb-32 overflow-y-auto">
         {current.type === "text" && (
           <input
             autoFocus
@@ -101,7 +125,7 @@ export const Survey = ({ onComplete }: { onComplete: (answers: Record<string, an
             value={value ?? ""}
             onChange={(e) => setValue(e.target.value)}
             placeholder="Type your answer..."
-            className="w-full rounded-2xl bg-white border-2 px-5 py-4 text-base text-foreground outline-none"
+            className="w-full rounded-2xl bg-white border-2 px-5 py-4 text-base text-foreground outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[hsl(var(--jazz-blue))]"
             style={{ borderColor: PURPLE }}
           />
         )}
@@ -124,7 +148,7 @@ export const Survey = ({ onComplete }: { onComplete: (answers: Record<string, an
         )}
 
         {(current.type === "single" || current.type === "multi") && (
-          <div className="grid grid-cols-2 gap-x-4 gap-y-4">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-3">
             {current.options!.map((opt) => {
               const selected =
                 current.type === "multi"
@@ -134,15 +158,15 @@ export const Survey = ({ onComplete }: { onComplete: (answers: Record<string, an
                 <button
                   key={opt.value}
                   onClick={() =>
-                    current.type === "multi" ? toggleMulti(opt.value) : setValue(opt.value)
+                    current.type === "multi" ? toggleMulti(opt.value) : pickSingle(opt.value)
                   }
-                  className="relative flex flex-col items-center justify-center text-center gap-2 rounded-[22px] px-3 py-4 border-2 transition-all min-h-[78px]"
+                  className="relative flex flex-col items-center justify-center text-center gap-2 rounded-[18px] px-3 py-4 border-2 transition-all min-h-[74px]"
                   style={{
-                    borderColor: PURPLE,
+                    borderColor: selected ? PURPLE : "hsl(var(--border))",
                     backgroundColor: selected ? "#ece6f5" : "white",
                   }}
                 >
-                  {showIcons && <OptionIcon label={opt.label} className="h-6 w-6" />}
+                  {showIcons && <OptionIcon label={opt.label} className="h-5 w-5" />}
                   <span className="text-sm font-semibold text-foreground leading-tight">
                     {opt.label}
                   </span>
@@ -158,23 +182,35 @@ export const Survey = ({ onComplete }: { onComplete: (answers: Record<string, an
         )}
       </div>
 
-      {/* Bottom nav — back & next circles, centered */}
-      <div className="absolute bottom-0 left-0 right-0 px-8 py-6 bg-white flex items-center justify-center gap-6">
+      {/* Bottom nav */}
+      <div className="absolute bottom-0 left-0 right-0 px-6 py-5 bg-white border-t border-border/60 flex items-center justify-between gap-3">
         <button
           onClick={back}
           disabled={idx === 0}
           aria-label="Back"
-          className="h-14 w-14 rounded-full bg-baby-blue flex items-center justify-center disabled:opacity-30 active:scale-95 transition shadow-soft"
+          className="h-12 w-12 rounded-full bg-muted flex items-center justify-center disabled:opacity-30 active:scale-95 transition"
         >
-          <ArrowLeft className="h-6 w-6 text-white" strokeWidth={2.6} />
+          <ArrowLeft className="h-5 w-5 text-foreground" strokeWidth={2.4} />
         </button>
+
+        {showSkip && (
+          <button
+            onClick={skip}
+            className="flex-1 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors py-3"
+          >
+            Skip
+          </button>
+        )}
+
         <button
           onClick={next}
           disabled={!canNext}
           aria-label={idx + 1 >= visible.length ? "Finish" : "Next"}
-          className="h-14 w-14 rounded-full bg-baby-blue flex items-center justify-center disabled:opacity-40 active:scale-95 transition shadow-soft"
+          className="h-12 min-w-[112px] px-5 rounded-full text-white font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-40 active:scale-95 transition shadow-soft"
+          style={{ background: "hsl(var(--jazz-blue))" }}
         >
-          <ArrowRight className="h-6 w-6 text-white" strokeWidth={2.6} />
+          {idx + 1 >= visible.length ? "Finish" : "Next"}
+          <ArrowRight className="h-4 w-4" strokeWidth={2.6} />
         </button>
       </div>
 

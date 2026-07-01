@@ -6,6 +6,7 @@ export type Question = {
   options?: Option[];
   branch?: "skin" | "hair" | "nails";
   showIf?: (answers: Record<string, any>) => boolean;
+  required?: boolean;
 };
 
 const opts = (...arr: string[]): Option[] => arr.map((v) => ({ value: v, label: v }));
@@ -13,16 +14,19 @@ const has = (a: Record<string, any>, key: string, val: string) =>
   Array.isArray(a[key]) && a[key].includes(val);
 
 export const questions: Question[] = [
-  { id: "firstName", type: "text", question: "What is your first name?" },
-  { id: "dob", type: "date", question: "What is your date of birth?" },
+  { id: "firstName", type: "text", question: "What is your first name?", required: true },
+  { id: "dob", type: "date", question: "What is your date of birth?", required: true },
   {
     id: "gender", type: "single", question: "What is your gender?",
     options: opts("Female", "Male", "Non-binary", "Prefer not to say"),
+    required: true,
   },
   {
     id: "focus", type: "multi", question: "What are you using Dermo AI for?",
     options: opts("Skin", "Hair", "Nails"),
+    required: true,
   },
+
   {
     id: "conditions", type: "multi",
     question: "Do you currently have any diagnosed conditions?",

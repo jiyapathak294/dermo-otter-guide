@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { z } from "zod";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,10 +16,25 @@ type Mode = "signin" | "signup";
 const passwordSchema = z.string()
   .min(8, "At least 8 characters")
   .regex(/[A-Z]/, "One uppercase letter")
-  .regex(/[0-9]/, "One number")
-  .regex(/[^A-Za-z0-9]/, "One special character");
+  .regex(/[0-9]/, "One number");
 
 const emailSchema = z.string().trim().email("Enter a valid email").max(255);
+
+/** 0..3 → red / orange / yellow / green */
+const passwordScore = (pw: string) => {
+  let s = 0;
+  if (pw.length >= 8) s++;
+  if (/[A-Z]/.test(pw)) s++;
+  if (/[0-9]/.test(pw)) s++;
+  return s; // 0..3
+};
+
+const strengthMeta = [
+  { label: "Too weak",  color: "#e5484d", pct: 8   },
+  { label: "Weak",      color: "#f76b15", pct: 40  },
+  { label: "Almost",    color: "#f5b400", pct: 72  },
+  { label: "Strong",    color: "#1fbf5f", pct: 100 },
+];
 
 const Auth = () => {
   const [mode, setMode] = useState<Mode>("signin");
@@ -30,9 +45,22 @@ const Auth = () => {
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [emailSent, setEmailSent] = useState(false);
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
+
+  const score = passwordScore(password);
+  const meta = strengthMeta[score];
+  const passwordsMatch = mode === "signup" && confirm.length > 0 && confirm === password;
+
+  const isValidForSubmit = useMemo(() => {
+    if (!emailSchema.safeParse(email).success) return false;
+    if (mode === "signup") {
+      if (!passwordSchema.safeParse(password).success) return false;
+      if (password !== confirm) return false;
+      if (!firstName.trim()) return false;
+    } else if (!password) return false;
+    return true;
+  }, [email, password, confirm, firstName, mode]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,10 +81,23 @@ const Auth = () => {
       if (mode === "signup") {
         const { error } = await signUp(email, password, firstName.trim());
         if (error) { setError(error); return; }
-        setEmailSent(true);
+        navigate("/", { replace: true });
       } else {
         const { error } = await signIn(email, password);
-        if (error) { setError(error); return; }
+        if (error) {
+          // If credentials failed, check whether the account even exists.
+          if (/incorrect|invalid/i.test(error)) {
+            try {
+              const { data } = await supabase.functions.invoke("check-email-exists", { body: { email } });
+              if (data && data.exists === false) {
+                setError("There is no account with this email. Try creating one.");
+                return;
+              }
+            } catch { /* fall through to generic error */ }
+          }
+          setError(error);
+          return;
+        }
         navigate("/", { replace: true });
       }
     } finally {
@@ -91,27 +132,6 @@ const Auth = () => {
       setBusy(false);
     }
   };
-
-  if (emailSent) {
-    return (
-      <main className="app-frame min-h-screen flex flex-col items-center justify-center px-6 py-10 bg-gradient-to-b from-background to-[hsl(var(--lavender)/0.15)]">
-        <div className="w-full max-w-sm text-center">
-          <DermoLogo color="#8d77ab" size={72} />
-          <h1 className="font-heading text-2xl mt-6 text-foreground">Check your email</h1>
-          <p className="text-sm text-muted-foreground mt-2">
-            We sent a confirmation link to <span className="font-medium text-foreground">{email}</span>. Click the link to activate your account and get started.
-          </p>
-          <button
-            type="button"
-            onClick={() => { setEmailSent(false); setMode("signin"); }}
-            className="mt-6 text-sm text-[hsl(var(--lavender))] hover:underline"
-          >
-            Back to sign in
-          </button>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="app-frame min-h-screen flex flex-col items-center justify-center px-6 py-10 bg-gradient-to-b from-background to-[hsl(var(--lavender)/0.15)]">
@@ -165,13 +185,41 @@ const Auth = () => {
                 </button>
               </div>
               {mode === "signup" && (
-                <p className="text-[11px] text-muted-foreground mt-1">8+ chars, 1 uppercase, 1 number, 1 special character.</p>
+                <>
+                  <div className="mt-2 h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-300 ease-out"
+                      style={{ width: password ? `${meta.pct}%` : "0%", backgroundColor: meta.color }}
+                    />
+                  </div>
+                  <p className="text-[11px] mt-1" style={{ color: password ? meta.color : "hsl(var(--muted-foreground))" }}>
+                    {password ? meta.label : "8+ characters, 1 uppercase, 1 number."}
+                  </p>
+                </>
               )}
             </div>
             {mode === "signup" && (
               <div className="space-y-1.5">
                 <Label htmlFor="confirm">Confirm password</Label>
-                <Input id="confirm" type={showPw ? "text" : "password"} value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" required />
+                <div className="relative">
+                  <Input
+                    id="confirm"
+                    type={showPw ? "text" : "password"}
+                    value={confirm}
+                    onChange={(e) => setConfirm(e.target.value)}
+                    autoComplete="new-password"
+                    required
+                  />
+                  {passwordsMatch && (
+                    <span
+                      aria-label="Passwords match"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full flex items-center justify-center animate-scale-in"
+                      style={{ backgroundColor: "#1fbf5f" }}
+                    >
+                      <Check className="h-4 w-4 text-white" strokeWidth={3} />
+                    </span>
+                  )}
+                </div>
               </div>
             )}
 
@@ -179,7 +227,7 @@ const Auth = () => {
               <div className="text-sm text-destructive bg-destructive/10 rounded-md px-3 py-2">{error}</div>
             )}
 
-            <Button type="submit" disabled={busy} className="w-full bg-[hsl(var(--lavender))] hover:bg-[hsl(var(--lavender))]/90 text-white">
+            <Button type="submit" disabled={busy || !isValidForSubmit} className="w-full bg-[hsl(var(--lavender))] hover:bg-[hsl(var(--lavender))]/90 text-white">
               {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : (mode === "signin" ? "Sign in" : "Create account")}
             </Button>
 
