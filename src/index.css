@@ -68,12 +68,11 @@
   button:not(:disabled):active { transform: scale(0.97); }
   a { transition: color 180ms ease, opacity 180ms ease; }
   .font-heading {
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-    letter-spacing: -0.02em;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+    letter-spacing: -0.022em;
     font-weight: 700;
   }
-  /* keep alias for any old refs */
-  .font-bubble { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; letter-spacing: -0.02em; font-weight: 700; }
+  .font-bubble { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif; letter-spacing: -0.022em; font-weight: 700; }
 }
 
 @layer utilities {
